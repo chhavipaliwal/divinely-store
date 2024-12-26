@@ -115,7 +115,7 @@ export default function New({ categories }: Props) {
               <dt className="text-sm font-medium leading-6">Tags</dt>
               <dd className="mt-1 flex flex-col-reverse items-start justify-end gap-2 text-sm leading-6 sm:col-span-2 sm:mt-0">
                 <div className="flex flex-wrap gap-1">
-                  {formik.values.tags.map(
+                  {formik?.values?.tags.map(
                     (tag, index) =>
                       tag && (
                         <>

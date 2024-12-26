@@ -29,28 +29,39 @@ import {
   ModalBody,
   ModalContent,
   ModalFooter,
-  useDisclosure
+  useDisclosure,
+  Spinner
 } from '@nextui-org/react';
 import { useFormik } from 'formik';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { toast } from 'sonner';
 import { signOut } from 'next-auth/react';
-
-interface HotelProps {
-  links: ILink[];
-  categories: ICategory[];
-}
+import axios from 'axios';
+import { useQueryState, parseAsInteger } from 'nuqs';
+import useDebounce from '@/hooks/useDebounce';
 
 const INITIAL_VISIBLE_COLUMNS = ['title', 'description', 'category', 'actions'];
 
-export default function Hotels({ links, categories }: HotelProps) {
+export default function Links() {
+  const [links, setLinks] = React.useState<ILink[]>([]);
+  const [pages, setPages] = React.useState(1);
+  const [pagination, setPagination] = React.useState({
+    page: 1,
+    limit: 20,
+    totalLinks: 0,
+    totalPages: 0
+  });
+  const [isLoading, setIsLoading] = React.useState(true);
+
   const deleteModal = useDisclosure();
   const router = useRouter();
   const [selected, setSelected] = React.useState<ILink | null>(null);
-  const [filterValue, setFilterValue] = React.useState('');
-  const [categoryFilter, setCategoryFilter] = React.useState<Selection>('all');
+  const [filterValue, setFilterValue] = useQueryState('query', {
+    defaultValue: ''
+  });
+  const debouncedSearchTerm = useDebounce(filterValue, 500);
 
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
     new Set([])
@@ -58,15 +69,34 @@ export default function Hotels({ links, categories }: HotelProps) {
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
-  const [rowsPerPage, setRowsPerPage] = React.useState(1000);
+  const [rowsPerPage, setRowsPerPage] = useQueryState(
+    'rows',
+    parseAsInteger.withDefault(20)
+  );
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: 'name',
     direction: 'ascending'
   });
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
 
-  const [page, setPage] = React.useState(1);
-
-  const hasSearchFilter = Boolean(filterValue);
+  useEffect(() => {
+    const getLinks = async () => {
+      setIsLoading(true);
+      const res = await axios.get(`/api/link`, {
+        params: {
+          page,
+          limit: rowsPerPage,
+          search: filterValue
+        }
+      });
+      const data = res.data.links;
+      setLinks(data);
+      setPages(res.data.pagination.totalPages);
+      setPagination(res.data.pagination);
+      setIsLoading(false);
+    };
+    getLinks();
+  }, [debouncedSearchTerm, rowsPerPage, page]);
 
   const headerColumns = React.useMemo(() => {
     if (visibleColumns === 'all') return columns;
@@ -79,47 +109,18 @@ export default function Hotels({ links, categories }: HotelProps) {
   let filteredItems = React.useMemo(() => {
     let filteredLinks = [...links];
 
-    if (hasSearchFilter) {
-      filteredLinks = filteredLinks.filter(
-        (link) =>
-          link.title.toLowerCase().includes(filterValue.toLowerCase()) ||
-          link.description.toLowerCase().includes(filterValue.toLowerCase()) ||
-          link.category.toLowerCase().includes(filterValue.toLowerCase()) ||
-          link.tags.some((tag) =>
-            tag.toLowerCase().includes(filterValue.toLowerCase())
-          )
-      );
-    }
-    if (
-      categoryFilter !== 'all' &&
-      Array.from(categoryFilter).length !== categories.length
-    ) {
-      filteredLinks = filteredLinks.filter((link) =>
-        Array.from(categoryFilter).includes(link.category)
-      );
-    }
-
     return filteredLinks;
-  }, [links, filterValue, categoryFilter]);
-
-  const pages = Math.ceil(filteredItems.length / rowsPerPage);
-
-  const items = React.useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-
-    return filteredItems.slice(start, end);
-  }, [page, filteredItems, rowsPerPage]);
+  }, [links]);
 
   const sortedItems = React.useMemo(() => {
-    return [...items].sort((a: ILink, b: ILink) => {
+    return [...links].sort((a: ILink, b: ILink) => {
       const first = a[sortDescriptor.column as keyof ILink] as string;
       const second = b[sortDescriptor.column as keyof ILink] as string;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === 'descending' ? -cmp : cmp;
     });
-  }, [sortDescriptor, items]);
+  }, [sortDescriptor, links]);
 
   const renderCell = React.useCallback((link: ILink, columnKey: React.Key) => {
     const cellValue = link[columnKey as keyof ILink];
@@ -273,32 +274,6 @@ export default function Hotels({ links, categories }: HotelProps) {
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button
-                  variant="flat"
-                  endContent={
-                    <Icon icon={'tabler:chevron-down'} fontSize={16} />
-                  }
-                >
-                  Category
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={categoryFilter}
-                selectionMode="multiple"
-                onSelectionChange={setCategoryFilter}
-              >
-                {categories.map((category) => (
-                  <DropdownItem key={category.name} className="capitalize">
-                    {capitalize(category.uid)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
                   endContent={
                     <Icon icon={'tabler:chevron-down'} fontSize={16} />
                   }
@@ -334,7 +309,7 @@ export default function Hotels({ links, categories }: HotelProps) {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-small text-default-400">
-            Total {links.length} links
+            Total {pagination.totalLinks} links
           </span>
           <label className="flex items-center text-small text-default-400">
             Rows per page:
@@ -342,9 +317,11 @@ export default function Hotels({ links, categories }: HotelProps) {
               className="bg-transparent text-small text-default-400 outline-none"
               onChange={onRowsPerPageChange}
             >
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="1000">1000</option>
+              {rows.map((row) => (
+                <option key={row.label} value={row.value}>
+                  {row.label}
+                </option>
+              ))}
             </select>
           </label>
         </div>
@@ -355,9 +332,7 @@ export default function Hotels({ links, categories }: HotelProps) {
     visibleColumns,
     onSearchChange,
     onRowsPerPageChange,
-    links.length,
-    hasSearchFilter,
-    categoryFilter
+    links.length
   ]);
 
   const bottomContent = React.useMemo(() => {
@@ -397,7 +372,7 @@ export default function Hotels({ links, categories }: HotelProps) {
         </div>
       </div>
     );
-  }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+  }, [selectedKeys, links.length, page, pages]);
 
   const formik = useFormik({
     initialValues: {},
@@ -420,7 +395,7 @@ export default function Hotels({ links, categories }: HotelProps) {
   return (
     <>
       <Table
-        aria-label="Hotels List"
+        aria-label="Links List"
         isHeaderSticky
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
@@ -450,7 +425,12 @@ export default function Hotels({ links, categories }: HotelProps) {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody items={sortedItems} emptyContent={'No links found'}>
+        <TableBody
+          items={sortedItems}
+          loadingContent={<Spinner />}
+          loadingState={isLoading ? 'loading' : 'idle'}
+          emptyContent={'No links found'}
+        >
           {(item) => (
             <TableRow
               key={item.url}
@@ -526,4 +506,23 @@ const columns = [
   { name: 'CATEGORY', uid: 'category', sortable: true },
   { name: 'UPDATED AT', uid: 'updatedAt', sortable: true },
   { name: 'ACTIONS', uid: 'actions' }
+];
+
+const rows = [
+  {
+    label: '20',
+    value: 20
+  },
+  {
+    label: '50',
+    value: 50
+  },
+  {
+    label: '100',
+    value: 100
+  },
+  {
+    label: '1000',
+    value: 1000
+  }
 ];

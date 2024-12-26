@@ -1,13 +1,16 @@
 'use client';
 
 import { NextUIProvider } from '@nextui-org/react';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { SessionProvider } from 'next-auth/react';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NextUIProvider>
-      <SessionProvider>{children}</SessionProvider>
+      <SessionProvider>
+        <NuqsAdapter>{children}</NuqsAdapter>
+      </SessionProvider>
     </NextUIProvider>
   );
 }
