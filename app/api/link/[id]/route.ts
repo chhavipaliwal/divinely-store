@@ -5,9 +5,6 @@ import { auth } from '@/auth';
 
 export const GET = auth(async function GET(request: any, context: any) {
   try {
-    if (!request.auth?.user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
     await connectDB();
     const link = await Link.findById(context.params.id);
     return NextResponse.json(link);

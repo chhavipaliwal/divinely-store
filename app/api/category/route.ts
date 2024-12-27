@@ -5,9 +5,6 @@ import { auth } from '@/auth';
 
 export const GET = auth(async function GET(request: any) {
   try {
-    if (!request.auth?.user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
     await connectDB();
     const categories = await Category.find();
     categories.sort((a, b) => a.name.localeCompare(b.name));
