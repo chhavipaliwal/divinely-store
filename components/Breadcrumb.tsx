@@ -25,7 +25,7 @@ export default function Breadcrumb() {
           <Link href={'/'}>Home</Link>
         </BreadcrumbItem>
         {breadcrumbItems?.map((item, index) => (
-          <BreadcrumbItem key={index}>
+          <BreadcrumbItem key={`breadcrumb-${item.link}`}>
             {index !== breadcrumbItems.length - 1 ? (
               <Link href={item.link}>
                 {item.label.charAt(0).toUpperCase() + item.label.slice(1)}

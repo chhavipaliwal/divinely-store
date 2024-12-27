@@ -10,10 +10,6 @@ export const GET = auth(async function GET(request: any) {
     const limit = Number(searchParams.get('limit')) || 20;
     const search = searchParams.get('search');
 
-    if (!request.auth?.user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-
     await connectDB();
 
     // Build the search query if there's a search term
