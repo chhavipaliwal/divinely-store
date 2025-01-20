@@ -58,7 +58,8 @@ const config = {
               '700': '#f1faf2',
               foreground: '#000',
               DEFAULT: '#599f61'
-            }
+            },
+            background: '#1E2022'
           }
         }
       },
