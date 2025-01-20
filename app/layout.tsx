@@ -26,8 +26,8 @@ export default function RootLayout({
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {/* <Navbar /> */}
-            <div className="mx-auto mt-12 max-w-7xl px-4">
-              <Breadcrumb />
+            <div className="mx-auto mt-12">
+              {/* <Breadcrumb /> */}
               {children}
             </div>
             <Sonner />
