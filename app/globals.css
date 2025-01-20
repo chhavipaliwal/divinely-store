@@ -46,4 +46,13 @@
     --destructive-foreground: 0 0% 100%;
     --ring: 126 47% 63%;
   }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .grid-cols-auto-fill {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
 }
