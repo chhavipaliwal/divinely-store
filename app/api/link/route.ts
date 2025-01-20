@@ -9,21 +9,24 @@ export const GET = auth(async function GET(request: any) {
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 20;
     const search = searchParams.get('search');
+    const category = searchParams.get('category');
 
     await connectDB();
 
     // Build the search query if there's a search term
-    const searchQuery = search
-      ? {
-          $or: [
-            { title: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { category: { $regex: search, $options: 'i' } },
-            { tags: { $elemMatch: { $regex: search, $options: 'i' } } }
-          ]
-        }
-      : {};
-
+    const searchQuery = {
+      ...(search
+        ? {
+            $or: [
+              { title: { $regex: search, $options: 'i' } },
+              { description: { $regex: search, $options: 'i' } },
+              { category: { $regex: search, $options: 'i' } },
+              { tags: { $elemMatch: { $regex: search, $options: 'i' } } }
+            ]
+          }
+        : {}),
+      ...(category ? { category } : {})
+    };
     // Paginate based on the page and limit
     const links = await Link.find(searchQuery)
       .skip((page - 1) * limit)

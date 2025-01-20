@@ -9,6 +9,8 @@ const linkSchema = new mongoose.Schema<CategoryInterface>(
       type: String,
       unique: true
     },
+    icon: String,
+    color: String,
     addedBy: String,
     modifiedBy: String
   },

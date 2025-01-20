@@ -1,17 +1,25 @@
 'use client';
+import { cn } from '@/lib/utils';
 import { Button } from '@nextui-org/react';
 import Link from 'next/link';
+import { useQueryState } from 'nuqs';
 
 export default function CategoryHeader() {
+  const [category] = useQueryState('category');
+
   const handleExploreClick = () => {
     const categoryBodyElement = document.getElementById('category-body');
     if (categoryBodyElement) {
       categoryBodyElement.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
   return (
     <>
-      <div className="flex flex-col items-center gap-4">
+      {/* {!category && ( */}
+      <div
+        className={cn('mb-12 flex flex-col items-center gap-4 overflow-hidden')}
+      >
         <h2 className="text-[clamp(1.5rem,8vw,13.5rem)] font-semibold">
           Divinely Store
         </h2>
@@ -33,6 +41,7 @@ export default function CategoryHeader() {
           </Button>
         </div>
       </div>
+      {/* )} */}
     </>
   );
 }

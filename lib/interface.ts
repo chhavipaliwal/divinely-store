@@ -28,4 +28,6 @@ export interface Link extends Base {
 export interface Category extends Base {
   name: string;
   uid: string;
+  icon: string;
+  color?: string;
 }
