@@ -1,6 +1,12 @@
 'use client';
 import { Link } from '@/lib/interface';
-import { Card, CardBody, Image, Pagination } from '@nextui-org/react';
+import {
+  Card,
+  CardBody,
+  Image,
+  Pagination,
+  ScrollShadow
+} from '@nextui-org/react';
 import axios from 'axios';
 import { parseAsInteger, useQueryState, useQueryStates } from 'nuqs';
 import { encode } from 'qss';
@@ -74,7 +80,10 @@ export default function Links() {
   }, [links, settings.sortType]);
 
   return (
-    <div id="links" className="flex flex-col items-center gap-12 px-4 md:px-8">
+    <div
+      id="links"
+      className="relative flex flex-col items-center gap-12 px-4 md:px-8"
+    >
       {isLoading ? (
         <LoadingSkeleton />
       ) : (
@@ -84,19 +93,29 @@ export default function Links() {
               <PressableCard key={link._id} link={link} />
             ))}
           </div>
-          <div className="flex justify-between">
-            <Pagination
-              isCompact
-              showControls
-              showShadow
-              color="primary"
-              page={params.page}
-              total={pages}
-              onChange={(page) => {
-                setParams({ page });
-              }}
-            />
-          </div>
+
+          {sortedLinks.length === 0 ? (
+            <div className="flex flex-col items-center gap-4">
+              <h1 className="text-2xl font-bold">No Refrences found!!!</h1>
+              <p className="text-default-500">
+                Try changing the search query or category
+              </p>
+            </div>
+          ) : (
+            <div className="flex justify-between">
+              <Pagination
+                isCompact
+                showControls
+                showShadow
+                color="primary"
+                page={params.page}
+                total={pages}
+                onChange={(page) => {
+                  setParams({ page });
+                }}
+              />
+            </div>
+          )}
         </>
       )}
     </div>

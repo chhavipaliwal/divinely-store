@@ -19,7 +19,7 @@ export default function CategoryHeader() {
       {/* {!category && ( */}
       <div
         className={cn(
-          'mb-12 flex flex-col items-center gap-4 overflow-hidden px-4 md:px-8'
+          'mb-12 flex flex-col items-center gap-4 overflow-hidden p-2 px-4 md:px-8'
         )}
       >
         <h2 className="text-[clamp(1.5rem,8vw,13.5rem)] font-semibold">
