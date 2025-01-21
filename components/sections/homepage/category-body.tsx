@@ -272,7 +272,10 @@ function LoadingSkeleton() {
     <>
       <div className="flex items-center gap-4 overflow-hidden">
         {[...Array(10)].map((_, index) => (
-          <Skeleton className="h-10 w-24 rounded-xl" />
+          <Skeleton
+            key={`loading-skeleton-${index}`}
+            className="h-10 w-24 rounded-xl"
+          />
         ))}
       </div>
     </>
