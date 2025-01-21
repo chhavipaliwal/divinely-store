@@ -33,8 +33,10 @@ import {
 } from '@/hooks/useSettings';
 import CellWrapper from '@/components/ui/cell-wrapper';
 import Skeleton from '@/components/ui/skeleton';
+import { signOut } from 'next-auth/react';
+import Link from 'next/link';
 
-export default function CategoryBody() {
+export default function CategoryBody({ session }: { session?: any }) {
   const [categories, setCategories] = useState<Category[]>([]);
   const settingModal = useDisclosure();
   const [selected, setSelected] = useQueryState('category');
@@ -119,7 +121,7 @@ export default function CategoryBody() {
             </ScrollShadow>
           )}
         </div>
-        <Links />
+        <Links session={session} />
       </div>
       <Modal
         backdrop="blur"
@@ -203,6 +205,35 @@ export default function CategoryBody() {
                       </Select>
                     </div>
                   </CellWrapper>
+                  {session ? (
+                    <CellWrapper className="justify-end">
+                      <div className="flex w-full flex-wrap items-center justify-end gap-6 sm:w-auto sm:flex-nowrap">
+                        <Button
+                          onPress={() => {
+                            signOut();
+                          }}
+                          variant="flat"
+                          color="danger"
+                        >
+                          Logout
+                        </Button>
+                      </div>
+                    </CellWrapper>
+                  ) : (
+                    <CellWrapper>
+                      <div>
+                        <p>Login</p>
+                        <p className="text-small text-default-500">
+                          Login to your account to access more features
+                        </p>
+                      </div>
+                      <div className="flex w-full flex-wrap items-center justify-end gap-6 sm:w-auto sm:flex-nowrap">
+                        <Button as={Link} href="/auth/login">
+                          Login
+                        </Button>
+                      </div>
+                    </CellWrapper>
+                  )}
                 </ScrollShadow>
               </ModalBody>
               <ModalFooter>
