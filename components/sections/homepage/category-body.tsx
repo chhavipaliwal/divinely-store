@@ -56,10 +56,10 @@ export default function CategoryBody() {
   return (
     <>
       <div id="category-body" className="min-h-[90vh]">
-        <div className="sticky top-0 z-20 flex flex-col gap-4 bg-background/70 px-4 py-4 backdrop-blur-lg md:flex-row md:items-center md:px-8">
+        <div className="sticky top-0 z-20 flex flex-col gap-2 bg-background/70 px-4 py-2 backdrop-blur-lg md:flex-row md:items-center md:gap-4 md:px-8 md:py-4">
           <div className="flex gap-2">
             <Input
-              className="min-w-72"
+              className="min-w-72 backdrop-blur-sm"
               placeholder="Search the realm..."
               value={query as string}
               onChange={(e) => {
@@ -70,8 +70,8 @@ export default function CategoryBody() {
                 }
               }}
               classNames={{
-                mainWrapper: 'backdrop-blur-lg',
-                inputWrapper: 'backdrop-blur-lg'
+                mainWrapper: 'backdrop-blur-lg bg-transparent',
+                inputWrapper: 'backdrop-blur-lg bg-transparent'
               }}
               variant="bordered"
             />
