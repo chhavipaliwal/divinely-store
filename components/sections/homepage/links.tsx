@@ -15,7 +15,7 @@ import useDebounce from '@/hooks/useDebounce';
 import { useSettings } from '@/hooks/useSettings';
 import Skeleton from '@/components/ui/skeleton';
 
-export default function Links() {
+export default function Links({ session }: { session?: any }) {
   const [links, setLinks] = useState<Link[]>([]);
   const [category, setCategory] = useQueryState('category');
   const [categoryHistory] = useState(category);
