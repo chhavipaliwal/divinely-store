@@ -2,17 +2,17 @@
 import { useQueryState } from 'nuqs';
 import CategoryBody from './category-body';
 import CategoryHeader from './category-header';
-import Links from './links';
+import { SettingsProvider } from '@/hooks/useSettings';
 
 export default function Categories() {
-  const [category, setCategory] = useQueryState('category');
-
   return (
     <>
-      <div>
-        <CategoryHeader />
-        <CategoryBody />
-      </div>
+      <SettingsProvider>
+        <div>
+          <CategoryHeader />
+          <CategoryBody />
+        </div>
+      </SettingsProvider>
     </>
   );
 }
