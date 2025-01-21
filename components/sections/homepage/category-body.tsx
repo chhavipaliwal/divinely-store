@@ -32,7 +32,7 @@ import {
   useSettings
 } from '@/hooks/useSettings';
 import CellWrapper from '@/components/ui/cell-wrapper';
-import { useRouter } from 'next/navigation';
+import Skeleton from '@/components/ui/skeleton';
 
 export default function CategoryBody() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -40,11 +40,13 @@ export default function CategoryBody() {
   const [selected, setSelected] = useQueryState('category');
   const [query, setQuery] = useQueryState('query');
   const { settings, dispatch } = useSettings();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getData = async () => {
       const data = await getAllCategories();
       setCategories(data);
+      setIsLoading(false);
     };
     getData();
   }, []);
@@ -79,39 +81,43 @@ export default function CategoryBody() {
               <Icon icon="mingcute:settings-7-line" width={20} />
             </Button>
           </div>
-          <ScrollShadow
-            orientation="horizontal"
-            className="no-scrollbar flex gap-2 p-2"
-          >
-            <Chip
-              as={Button}
-              className={cn('rounded-xl p-2 py-4 backdrop-blur-lg', {
-                'py-[18px]': !selected
-              })}
-              variant={selected ? 'bordered' : 'flat'}
-              color={selected ? 'default' : 'primary'}
-              onPress={() => {
-                setSelected(null);
-              }}
+          {isLoading ? (
+            <LoadingSkeleton />
+          ) : (
+            <ScrollShadow
+              orientation="horizontal"
+              className="no-scrollbar flex gap-2 p-2"
             >
-              <div className="flex items-center gap-4">
-                <div>
-                  <Icon icon="mingcute:home-4-fill" width={24} />
+              <Chip
+                as={Button}
+                className={cn('rounded-xl p-2 py-4 backdrop-blur-lg', {
+                  'py-[18px]': !selected
+                })}
+                variant={selected ? 'bordered' : 'flat'}
+                color={selected ? 'default' : 'primary'}
+                onPress={() => {
+                  setSelected(null);
+                }}
+              >
+                <div className="flex items-center gap-4">
+                  <div>
+                    <Icon icon="mingcute:home-4-fill" width={24} />
+                  </div>
+                  <div>
+                    <h3 className="whitespace-nowrap">Home</h3>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="whitespace-nowrap">Home</h3>
-                </div>
-              </div>
-            </Chip>
-            {categories.map((category: Category) => (
-              <PressableCard
-                selected={selected}
-                setSelected={setSelected}
-                key={category._id}
-                category={category}
-              />
-            ))}
-          </ScrollShadow>
+              </Chip>
+              {categories.map((category: Category) => (
+                <PressableCard
+                  selected={selected}
+                  setSelected={setSelected}
+                  key={category._id}
+                  category={category}
+                />
+              ))}
+            </ScrollShadow>
+          )}
         </div>
         <Links />
       </div>
@@ -257,6 +263,18 @@ function PressableCard({
           </div>
         </div>
       </Chip>
+    </>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <>
+      <div className="flex items-center gap-4 overflow-hidden">
+        {[...Array(10)].map((_, index) => (
+          <Skeleton className="h-10 w-24 rounded-xl" />
+        ))}
+      </div>
     </>
   );
 }
