@@ -160,9 +160,11 @@ function PressableCard({ link }: { link: Link }) {
               isBlurred
               isLoading={isLoading}
               src={
-                isError
-                  ? 'https://heroui.com/images/hero-card-complete.jpeg'
-                  : src
+                link.thumbnail
+                  ? link.thumbnail
+                  : isError
+                    ? 'https://heroui.com/images/hero-card-complete.jpeg'
+                    : src
               }
               onLoad={() => {
                 setIsLoading(false);
@@ -171,7 +173,7 @@ function PressableCard({ link }: { link: Link }) {
                 setIsError(true);
               }}
               alt={link.title}
-              className="object-over mb-4 aspect-video w-full bg-default-200"
+              className="mb-4 aspect-video w-full bg-default-200 object-cover"
               width={600}
               classNames={{
                 wrapper: 'aspect-video'
