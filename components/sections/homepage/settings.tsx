@@ -22,8 +22,8 @@ import {
   SelectItem,
   ModalFooter
 } from '@nextui-org/react';
-import { Link } from 'lucide-react';
 import { signOut } from 'next-auth/react';
+import Link from 'next/link';
 
 export default function Settings({
   isOpen,

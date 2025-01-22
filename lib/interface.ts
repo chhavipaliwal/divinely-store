@@ -23,6 +23,7 @@ export interface Link extends Base {
   image?: string;
   slug: string;
   status: 'open' | 'closed';
+  thumbnail: string;
 }
 
 export interface Category extends Base {
