@@ -148,10 +148,15 @@ function PressableCard({ link }: { link: Link }) {
   return (
     <>
       <Card
+        isHoverable
         isPressable
         className="backdrop-blur-md hover:bg-default-200/30"
         onPress={() => {
           window.open(link.url, '_blank');
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          window.open(`/${link._id}/edit`, '_self');
         }}
       >
         <CardBody className="gap-2">
