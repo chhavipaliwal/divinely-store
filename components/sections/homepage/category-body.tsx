@@ -6,35 +6,16 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 import {
   Button,
   Chip,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
   Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
   ScrollShadow,
-  Select,
-  SelectItem,
   useDisclosure
 } from '@nextui-org/react';
 import { useQueryState } from 'nuqs';
 import { useEffect, useState } from 'react';
 import Links from './links';
-import SwitchCell from '@/components/ui/switch-cell';
-import {
-  defaultSettings,
-  SettingsProps,
-  sortTypes,
-  useSettings
-} from '@/hooks/useSettings';
-import CellWrapper from '@/components/ui/cell-wrapper';
+import { useSettings } from '@/hooks/useSettings';
 import Skeleton from '@/components/ui/skeleton';
 import Link from 'next/link';
-import { signOut } from 'next-auth/react';
 import Settings from './settings';
 
 export default function CategoryBody({ session }: { session?: any }) {
@@ -88,15 +69,13 @@ export default function CategoryBody({ session }: { session?: any }) {
               className="no-scrollbar flex gap-2 p-2"
             >
               <Chip
-                as={Button}
+                as={Link}
                 className={cn('rounded-xl p-2 py-4 backdrop-blur-lg', {
                   'py-[18px]': !selected
                 })}
                 variant={selected ? 'bordered' : 'flat'}
                 color={selected ? 'default' : 'primary'}
-                onPress={() => {
-                  setSelected(null);
-                }}
+                href={'/'}
               >
                 <div className="flex items-center gap-4">
                   <div>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Link from '@/models/Link';
 import { connectDB } from '@/lib/db';
 import { auth } from '@/auth';
+import { title } from 'process';
 
 export const GET = auth(async function GET(request: any) {
   try {
@@ -29,6 +30,7 @@ export const GET = auth(async function GET(request: any) {
     };
     // Paginate based on the page and limit
     const links = await Link.find(searchQuery)
+      .sort({ title: 1 })
       .skip((page - 1) * limit)
       .limit(limit);
 
