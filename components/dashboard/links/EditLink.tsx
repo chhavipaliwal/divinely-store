@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Category, Link as ILink } from '@/lib/interface';
 import { humanReadableDate, humanReadableTime } from '@/functions/utility';
 import {
@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import slugify from 'slugify';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   link: ILink;
@@ -29,6 +30,7 @@ interface Props {
 }
 
 export default function EditLink({ link, categories }: Props) {
+  const router = useRouter();
   const formik = useFormik({
     initialValues: {
       link,
@@ -49,20 +51,28 @@ export default function EditLink({ link, categories }: Props) {
         console.log(filename);
         formData.append('file', formik.values.file);
         formData.append('filename', filename);
-        await axios.post(`/api/s3-upload`, formData).then((res) => {
-          values.link.thumbnail = res.data.url;
-        });
+        await axios
+          .post(`/api/s3-upload`, formData)
+          .then((res) => {
+            values.link.thumbnail = res.data.url;
+          })
+          .catch((error) => {
+            toast.error(error.response.data.message, { id: 'saving' });
+          });
       } else {
         console.log('No file');
       }
       await axios
         .put(`/api/link/${link._id}`, values.link)
         .then(() => {
-          toast.success('Link updated successfully');
+          router.push(`/`);
+          toast.success('Link updated successfully', {
+            id: 'saving'
+          });
         })
         .catch((error) => {
           console.log(error);
-          toast.error(error.response.data.message);
+          toast.error(error.response.data.message, { id: 'saving' });
         });
     }
   });
@@ -78,6 +88,30 @@ export default function EditLink({ link, categories }: Props) {
       reader.readAsDataURL(file);
     }
   };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault(); // Prevent default to allow drop
+    formik.setFieldValue('file', e.dataTransfer.files[0]);
+    const reader = new FileReader();
+    reader.onload = () => {
+      formik.setFieldValue('thumbnailPreview', reader.result);
+    };
+    reader.readAsDataURL(e.dataTransfer.files[0]);
+    e.currentTarget.classList.remove('border-primary'); // Remove highlight
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey && e.key === 's') {
+        e.preventDefault();
+        formik.handleSubmit();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <>
@@ -104,6 +138,10 @@ export default function EditLink({ link, categories }: Props) {
               <label
                 htmlFor="thumbnail"
                 className="relative mx-auto flex min-w-80 max-w-xl items-center justify-center overflow-hidden rounded-3xl"
+                onDragOver={(e) => {
+                  e.preventDefault(); // Prevent default to allow drop
+                }}
+                onDrop={handleDrop}
               >
                 <Image
                   src={`${formik.values.thumbnailPreview}`}
@@ -118,7 +156,7 @@ export default function EditLink({ link, categories }: Props) {
             ) : (
               <label
                 htmlFor="thumbnail"
-                className="group mx-auto flex aspect-video w-full max-w-3xl items-center justify-center rounded-large border border-dashed border-default p-4 transition-all hover:border-default-400"
+                className="group mx-auto mb-4 flex aspect-video w-full max-w-3xl items-center justify-center rounded-large border !border-b border-dashed border-default p-4 pb-4 transition-all hover:border-default-400"
                 onDragOver={(e) => {
                   e.preventDefault(); // Prevent default to allow drop
                   e.currentTarget.classList.add('border-primary'); // Optional: Highlight border on drag
@@ -129,11 +167,7 @@ export default function EditLink({ link, categories }: Props) {
                 onDragLeave={(e) => {
                   e.currentTarget.classList.remove('border-primary'); // Remove highlight
                 }}
-                onDrop={(e) => {
-                  e.preventDefault(); // Prevent default to allow drop
-                  e.currentTarget.classList.remove('border-primary'); // Remove highlight
-                  handleFileInput(e as any);
-                }}
+                onDrop={handleDrop}
               >
                 <div className="flex flex-col items-center">
                   <Icon icon="uim:image-v" width="48" />
