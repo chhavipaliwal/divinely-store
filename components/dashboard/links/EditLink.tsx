@@ -13,7 +13,8 @@ import {
   Chip,
   CardBody,
   CardFooter,
-  Image
+  Image,
+  Spinner
 } from '@nextui-org/react';
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
@@ -65,7 +66,7 @@ export default function EditLink({ link, categories }: Props) {
       await axios
         .put(`/api/link/${link._id}`, values.link)
         .then(() => {
-          router.push(`/`);
+          // router.push(`/`);
           toast.success('Link updated successfully', {
             id: 'saving'
           });
@@ -104,9 +105,11 @@ export default function EditLink({ link, categories }: Props) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.metaKey && e.key === 's') {
         e.preventDefault();
+        if (formik.isSubmitting) return;
         formik.handleSubmit();
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -115,7 +118,7 @@ export default function EditLink({ link, categories }: Props) {
 
   return (
     <>
-      <div>
+      <div className="relative">
         <Card
           className="mt-6 bg-transparent p-4 shadow-none"
           as={'form'}
@@ -322,6 +325,12 @@ export default function EditLink({ link, categories }: Props) {
             </Button>
           </CardFooter>
         </Card>
+        {formik.isSubmitting && (
+          <div className="fixed left-0 top-0 z-20 flex h-full w-full flex-col items-center justify-center gap-2 backdrop-blur-sm">
+            <Spinner />
+            <h3>Saving...</h3>
+          </div>
+        )}
       </div>
     </>
   );

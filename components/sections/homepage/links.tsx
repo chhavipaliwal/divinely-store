@@ -156,7 +156,7 @@ function PressableCard({ link }: { link: Link }) {
         }}
         onContextMenu={(e) => {
           e.preventDefault();
-          window.open(`/${link._id}/edit`, '_self');
+          window.open(`/${link._id}/edit`, '_blank');
         }}
       >
         <CardBody className="gap-2">
@@ -169,7 +169,7 @@ function PressableCard({ link }: { link: Link }) {
                   ? link.thumbnail
                   : isError
                     ? 'https://heroui.com/images/hero-card-complete.jpeg'
-                    : src
+                    : ''
               }
               onLoad={() => {
                 setIsLoading(false);
@@ -177,6 +177,7 @@ function PressableCard({ link }: { link: Link }) {
               onError={() => {
                 setIsError(true);
               }}
+              loading="lazy"
               alt={link.title}
               className="mb-4 aspect-video w-full bg-default-200 object-cover"
               width={600}
