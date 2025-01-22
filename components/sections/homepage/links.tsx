@@ -1,8 +1,14 @@
 'use client';
 import { Link } from '@/lib/interface';
 import {
+  Avatar,
+  Button,
   Card,
   CardBody,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Image,
   Pagination,
   ScrollShadow
@@ -14,8 +20,9 @@ import { useEffect, useMemo, useState } from 'react';
 import useDebounce from '@/hooks/useDebounce';
 import { useSettings } from '@/hooks/useSettings';
 import Skeleton from '@/components/ui/skeleton';
+import { Icon } from '@iconify/react/dist/iconify.js';
 
-export default function Links() {
+export default function Links({ session }: { session?: any }) {
   const [links, setLinks] = useState<Link[]>([]);
   const [category, setCategory] = useQueryState('category');
   const [categoryHistory] = useState(category);
@@ -52,9 +59,9 @@ export default function Links() {
         .then((res) => {
           setLinks(res.data.links);
           setPages(res.data.pagination.totalPages);
-          //   if (res.data.pagination.totalPages < params.page) {
-          //     setParams({ page: res.data.pagination.totalPages });
-          //   }
+          if (res.data.pagination.totalPages < params.page) {
+            setParams({ page: res.data.pagination.totalPages });
+          }
           setIsLoading(false);
           //   scroll to to links
           if (params.page > 1) {
@@ -171,9 +178,42 @@ function PressableCard({ link }: { link: Link }) {
               }}
             />
           </div>
-          <div className="flex flex-col">
-            <h3>{link.title}</h3>
-            <p className="line-clamp-1">{link.description}</p>
+          <div className="flex items-center gap-2">
+            {/* <div>
+              <Avatar
+                src={`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${link.url}&size=64`}
+              />
+            </div> */}
+            <div className="flex flex-col">
+              <h3>{link.title}</h3>
+              <p className="line-clamp-1" title={link.description}>
+                {link.description}
+              </p>
+            </div>
+            <div>
+              <Dropdown aria-label="Options" placement="top-end">
+                <DropdownTrigger>
+                  <Button variant="flat" size="sm" isIconOnly>
+                    <Icon icon="tabler:dots-vertical" width={16} />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                  <DropdownItem key="view" target="_BLANK" href={link.url}>
+                    View
+                  </DropdownItem>
+                  <DropdownItem key="edit" href={`/${link._id}/edit`}>
+                    Edit
+                  </DropdownItem>
+                  <DropdownItem
+                    key="delete"
+                    className="text-danger"
+                    color="danger"
+                  >
+                    Delete
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
           </div>
         </CardBody>
       </Card>
