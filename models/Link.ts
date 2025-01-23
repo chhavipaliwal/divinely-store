@@ -11,7 +11,8 @@ const linkSchema = new mongoose.Schema<LinkInterface>(
     slug: String,
     image: String,
     addedBy: String,
-    modifiedBy: String
+    modifiedBy: String,
+    thumbnail: String
   },
   {
     timestamps: true

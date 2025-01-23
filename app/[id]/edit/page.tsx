@@ -1,5 +1,4 @@
 import EditLink from '@/components/dashboard/links/EditLink';
-import ViewLink from '@/components/dashboard/links/link';
 import { API_BASE_URL } from '@/lib/config';
 import { Category, Link } from '@/lib/interface';
 import { cookies } from 'next/headers';

@@ -22,7 +22,7 @@ export default function ViewLink({ link }: Props) {
   return (
     <>
       <div>
-        <Card className="mt-6 p-4">
+        <Card className="mt-6 bg-transparent p-4 shadow-none">
           <CardHeader className="justify-between">
             <Avatar
               size="lg"

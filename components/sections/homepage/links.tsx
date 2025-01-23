@@ -1,8 +1,14 @@
 'use client';
 import { Link } from '@/lib/interface';
 import {
+  Avatar,
+  Button,
   Card,
   CardBody,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Image,
   Pagination,
   ScrollShadow
@@ -14,6 +20,7 @@ import { useEffect, useMemo, useState } from 'react';
 import useDebounce from '@/hooks/useDebounce';
 import { useSettings } from '@/hooks/useSettings';
 import Skeleton from '@/components/ui/skeleton';
+import { Icon } from '@iconify/react/dist/iconify.js';
 
 export default function Links({ session }: { session?: any }) {
   const [links, setLinks] = useState<Link[]>([]);
@@ -52,9 +59,9 @@ export default function Links({ session }: { session?: any }) {
         .then((res) => {
           setLinks(res.data.links);
           setPages(res.data.pagination.totalPages);
-          //   if (res.data.pagination.totalPages < params.page) {
-          //     setParams({ page: res.data.pagination.totalPages });
-          //   }
+          if (res.data.pagination.totalPages < params.page) {
+            setParams({ page: res.data.pagination.totalPages });
+          }
           setIsLoading(false);
           //   scroll to to links
           if (params.page > 1) {
@@ -141,10 +148,15 @@ function PressableCard({ link }: { link: Link }) {
   return (
     <>
       <Card
+        isHoverable
         isPressable
         className="backdrop-blur-md hover:bg-default-200/30"
         onPress={() => {
           window.open(link.url, '_blank');
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          window.open(`/${link._id}/edit`, '_blank');
         }}
       >
         <CardBody className="gap-2">
@@ -153,9 +165,11 @@ function PressableCard({ link }: { link: Link }) {
               isBlurred
               isLoading={isLoading}
               src={
-                isError
-                  ? 'https://heroui.com/images/hero-card-complete.jpeg'
-                  : src
+                link.thumbnail
+                  ? link.thumbnail
+                  : isError
+                    ? 'https://heroui.com/images/hero-card-complete.jpeg'
+                    : ''
               }
               onLoad={() => {
                 setIsLoading(false);
@@ -163,17 +177,51 @@ function PressableCard({ link }: { link: Link }) {
               onError={() => {
                 setIsError(true);
               }}
+              loading="lazy"
               alt={link.title}
-              className="object-over mb-4 aspect-video w-full bg-default-200"
+              className="mb-4 aspect-video w-full bg-default-200 object-cover"
               width={600}
               classNames={{
                 wrapper: 'aspect-video'
               }}
             />
           </div>
-          <div className="flex flex-col">
-            <h3>{link.title}</h3>
-            <p className="line-clamp-1">{link.description}</p>
+          <div className="flex items-center gap-2">
+            {/* <div>
+              <Avatar
+                src={`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${link.url}&size=64`}
+              />
+            </div> */}
+            <div className="flex flex-col">
+              <h3>{link.title}</h3>
+              <p className="line-clamp-1" title={link.description}>
+                {link.description}
+              </p>
+            </div>
+            <div>
+              <Dropdown aria-label="Options" placement="top-end">
+                <DropdownTrigger>
+                  <Button variant="flat" size="sm" isIconOnly>
+                    <Icon icon="tabler:dots-vertical" width={16} />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                  <DropdownItem key="view" target="_BLANK" href={link.url}>
+                    View
+                  </DropdownItem>
+                  <DropdownItem key="edit" href={`/${link._id}/edit`}>
+                    Edit
+                  </DropdownItem>
+                  <DropdownItem
+                    key="delete"
+                    className="text-danger"
+                    color="danger"
+                  >
+                    Delete
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
           </div>
         </CardBody>
       </Card>
