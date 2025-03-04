@@ -35,7 +35,7 @@ export default async function Page({ params }: Props) {
   const categories: Category[] = await getCategories();
   return (
     <>
-      <EditLink link={link} categories={categories} />
+      <EditLink link={link} />
     </>
   );
 }

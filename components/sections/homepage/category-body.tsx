@@ -144,13 +144,18 @@ export default function CategoryBody({ session }: { session?: any }) {
               className="no-scrollbar flex gap-2 p-2"
             >
               <Chip
-                as={Link}
-                className={cn('rounded-xl p-2 py-4 backdrop-blur-lg', {
-                  'py-[18px]': !selected
-                })}
+                className={cn(
+                  'cursor-pointer rounded-xl p-2 py-4 backdrop-blur-lg',
+                  {
+                    'py-[18px]': !selected
+                  }
+                )}
                 variant={selected ? 'bordered' : 'flat'}
                 color={selected ? 'default' : 'primary'}
-                href={'/'}
+                onClick={() => {
+                  setSelected(null);
+                  setQuery(null);
+                }}
               >
                 <div className="flex items-center gap-4">
                   <div>
@@ -203,19 +208,12 @@ function PressableCard({
   selected: string | null;
   setSelected: (value: string | null) => void;
 }) {
-  const [_query, setQuery] = useQueryState('query');
-
   return (
     <>
       <Chip
         as={Button}
         onPress={() => {
-          if (selected === category.uid) {
-            setSelected(null);
-          } else {
-            setSelected(category.uid);
-            setQuery(null);
-          }
+          setSelected(category.uid);
         }}
         className={cn('rounded-xl p-2 py-4 backdrop-blur-lg', {
           'py-[18px]': category.uid === selected
