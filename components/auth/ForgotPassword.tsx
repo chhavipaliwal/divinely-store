@@ -1,5 +1,5 @@
 'use client';
-import { Avatar, Button, Input } from '@heroui/react';
+import { addToast, Avatar, Button, Input } from '@heroui/react';
 import { useFormik } from 'formik';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -35,12 +35,18 @@ const ForgotPassword = () => {
           verifyOtp();
         } else {
           const res = await axios.post('/api/auth/forgot-password', values);
-          toast.success(res.data.message);
+          addToast({
+            title: res.data.message,
+            color: 'success'
+          });
           setIsOtpSent(true);
         }
       } catch (error: any) {
         console.log(error);
-        toast.error(error.response.data.message);
+        addToast({
+          title: error.response.data.message,
+          color: 'danger'
+        });
       }
     }
   });
@@ -52,7 +58,10 @@ const ForgotPassword = () => {
 
   useEffect(() => {
     if (count > 5) {
-      toast.error('Maximum attempts reached. Please try again later.');
+      addToast({
+        title: 'Maximum attempts reached. Please try again later.',
+        color: 'danger'
+      });
       setIsOtpSent(false);
       setIsVerified(false);
       setCount(0);
@@ -65,10 +74,16 @@ const ForgotPassword = () => {
       const res = await axios.post('/api/auth/forgot-password', {
         id: formik.values.id
       });
-      toast.success(res.data.message);
+      addToast({
+        title: res.data.message,
+        color: 'success'
+      });
     } catch (error: any) {
       console.log(error);
-      toast.error(error.response.data.message);
+      addToast({
+        title: error.response.data.message,
+        color: 'danger'
+      });
     }
   };
 
@@ -78,12 +93,18 @@ const ForgotPassword = () => {
         id: formik.values.id,
         otp: parseInt(formik.values.otp)
       });
-      toast.success(res.data.message);
+      addToast({
+        title: res.data.message,
+        color: 'success'
+      });
       setIsVerified(true);
     } catch (error: any) {
       setCount(count + 1);
       console.log(error);
-      toast.error(error.response.data.message);
+      addToast({
+        title: error.response.data.message,
+        color: 'danger'
+      });
     }
   };
 
@@ -228,11 +249,17 @@ const UpdatePassword = ({ id }: UpdatePasswordProps) => {
           id: id || searchParams.get('id'),
           password: values.password
         });
-        toast.success('Password updated successfully');
+        addToast({
+          title: 'Password updated successfully',
+          color: 'success'
+        });
         router.push('/auth/login');
       } catch (error: any) {
         console.log(error);
-        toast.error(error.response.data.message);
+        addToast({
+          title: error.response.data.message,
+          color: 'danger'
+        });
       }
     }
   });

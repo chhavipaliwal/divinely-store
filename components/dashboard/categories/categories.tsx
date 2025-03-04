@@ -31,7 +31,7 @@ import {
   ModalContent,
   ModalFooter,
   useDisclosure
-} from "@heroui/react";
+} from '@heroui/react';
 import { useFormik } from 'formik';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -407,7 +407,7 @@ export default function Hotels({ categories }: HotelProps) {
             >
               {(columnKey) => (
                 // @ts-ignore
-                (<TableCell>{renderCell(item, columnKey)}</TableCell>)
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
               )}
             </TableRow>
           )}

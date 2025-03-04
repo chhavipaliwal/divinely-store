@@ -1,6 +1,6 @@
 'use client';
 import { Icon } from '@iconify/react/dist/iconify.js';
-import { Avatar, Button, Divider, Input } from "@heroui/react";
+import { addToast, Avatar, Button, Divider, Input } from '@heroui/react';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
@@ -33,7 +33,10 @@ const SignIn = () => {
           redirect: false
         }).then((res) => {
           if (res?.error) {
-            toast.error(res.code);
+            addToast({
+              title: res.error,
+              color: 'danger'
+            });
           } else if (res?.ok) {
             window.location.href = '/';
           }

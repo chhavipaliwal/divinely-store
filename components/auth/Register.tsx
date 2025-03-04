@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@iconify/react/dist/iconify.js';
-import { Avatar, Button, Link, Input } from "@heroui/react";
+import { Avatar, Button, Link, Input, addToast } from '@heroui/react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'sonner';
@@ -51,7 +51,10 @@ export default function Register() {
           verifyOtp();
         } else {
           const res = await axios.post('/api/auth/register/send-otp', values);
-          toast.success(res.data.message);
+          addToast({
+            title: res.data.message,
+            color: 'success'
+          });
           setIsOtpSent(true);
         }
       } catch (e) {
@@ -68,7 +71,10 @@ export default function Register() {
 
   useEffect(() => {
     if (count > 5) {
-      toast.error('Maximum attempts reached. Please try again later.');
+      addToast({
+        title: 'Maximum attempts reached. Please try again later.',
+        color: 'danger'
+      });
       setIsOtpSent(false);
       setIsVerified(false);
       setCount(0);
@@ -83,12 +89,18 @@ export default function Register() {
         id: formik.values.id,
         otp: parseInt(formik.values.otp)
       });
-      toast.success(res.data.message);
+      addToast({
+        title: res.data.message,
+        color: 'success'
+      });
       setIsVerified(true);
     } catch (error: any) {
       setCount(count + 1);
       console.log(error);
-      toast.error(error.response.data.message);
+      addToast({
+        title: error.response.data.message,
+        color: 'danger'
+      });
     }
   };
 
@@ -97,10 +109,16 @@ export default function Register() {
       const res = await axios.post('/api/auth/register/send-otp', {
         id: formik.values.id
       });
-      toast.success(res.data.message);
+      addToast({
+        title: res.data.message,
+        color: 'success'
+      });
     } catch (error: any) {
       console.log(error);
-      toast.error(error.response.data.message);
+      addToast({
+        title: error.response.data.message,
+        color: 'danger'
+      });
     }
   };
 
@@ -200,12 +218,18 @@ const IdInput = () => {
     onSubmit: async (values) => {
       try {
         const res = await axios.post('/api/auth/register/send-otp', values);
-        toast.success(res.data.message);
+        addToast({
+          title: res.data.message,
+          color: 'success'
+        });
         const sp = new URLSearchParams(searchParams);
         sp.set('otp', 'true');
         router.push(`${pathname}?${sp.toString()}`);
       } catch (error: any) {
-        toast.error(error.response.data.message);
+        addToast({
+          title: error.response.data.message,
+          color: 'danger'
+        });
         console.error(error);
       }
     }
@@ -282,8 +306,11 @@ const DetailForm = () => {
           callbackUrl: '/'
         });
       } catch (error: any) {
-        toast.error(error.response.data.message);
         console.error(error);
+        addToast({
+          title: error.response.data.message,
+          color: 'danger'
+        });
       }
     }
   });
