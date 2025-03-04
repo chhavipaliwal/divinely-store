@@ -12,7 +12,7 @@ import {
   Image,
   Pagination,
   ScrollShadow
-} from '@nextui-org/react';
+} from "@heroui/react";
 import axios from 'axios';
 import { parseAsInteger, useQueryState, useQueryStates } from 'nuqs';
 import { encode } from 'qss';

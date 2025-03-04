@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardBody,
   Avatar
-} from '@nextui-org/react';
+} from "@heroui/react";
 import { IconPencil } from '@tabler/icons-react';
 import Link from 'next/link';
 

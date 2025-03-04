@@ -15,7 +15,7 @@ import {
   CardFooter,
   Image,
   Spinner
-} from '@nextui-org/react';
+} from "@heroui/react";
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
 import { Icon } from '@iconify/react/dist/iconify.js';

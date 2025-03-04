@@ -3,7 +3,7 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 import {
   BreadcrumbItem,
   Breadcrumbs as NextUIBreadcrumbs
-} from '@nextui-org/react';
+} from "@heroui/react";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';

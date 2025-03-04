@@ -7,7 +7,7 @@ import {
   Card,
   CardBody,
   CardFooter
-} from '@nextui-org/react';
+} from "@heroui/react";
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
 import { toast } from 'sonner';

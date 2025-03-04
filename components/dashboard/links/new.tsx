@@ -13,7 +13,7 @@ import {
   Select,
   SelectItem,
   Textarea
-} from '@nextui-org/react';
+} from "@heroui/react";
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';

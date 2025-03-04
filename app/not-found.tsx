@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Card, Link as NextLink } from '@nextui-org/react';
+import { Button, Card, Link as NextLink } from "@heroui/react";
 import Link from 'next/link';
 import {
   IconArrowNarrowLeft,
