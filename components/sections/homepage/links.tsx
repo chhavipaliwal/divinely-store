@@ -56,7 +56,7 @@ export default function Links() {
       formik.values.page,
       formik.values.limit,
       query,
-      // category,
+      category,
       formik.values.sortDescriptor.column,
       formik.values.sortDescriptor.direction
     ],
