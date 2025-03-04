@@ -2,11 +2,13 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
+  "author": "divinelydeveloper",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "publish": "npx @raycast/api@latest publish"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.4.2",
