@@ -160,10 +160,26 @@ export default function CategoryBody({ session }: { session?: any }) {
                   category={category}
                 />
               ))}
+              <Chip
+                as={Link}
+                className={cn('rounded-xl p-2 py-4 backdrop-blur-lg')}
+                variant="bordered"
+                color="default"
+                href={'/links/new'}
+              >
+                <div className="flex items-center gap-4">
+                  <div>
+                    <Icon icon="mingcute:add-fill" width={24} />
+                  </div>
+                  <div>
+                    <h3 className="whitespace-nowrap">Add New Item</h3>
+                  </div>
+                </div>
+              </Chip>
             </ScrollShadow>
           )}
         </div>
-        <Links session={session} />
+        <Links />
       </div>
       <Settings
         isOpen={settingModal.isOpen}

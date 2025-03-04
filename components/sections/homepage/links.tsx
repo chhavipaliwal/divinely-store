@@ -1,6 +1,7 @@
 'use client';
 import { Link } from '@/lib/interface';
 import {
+  addToast,
   Button,
   Card,
   CardBody,
@@ -41,14 +42,14 @@ const getAllLinks = async (params: {
   return res.data;
 };
 
-export default function Links({ session }: { session?: any }) {
+export default function Links() {
   const { formik } = useForm();
 
   const [searchQuery] = useQueryState('query');
   const [category, setCategory] = useQueryState('category');
   const query = useDebounce(searchQuery || '', 1000);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: [
       'links',
       formik.values.page,
@@ -93,7 +94,7 @@ export default function Links({ session }: { session?: any }) {
         <>
           <div className="mt-12 grid w-full gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {links.map((link) => (
-              <PressableCard key={link._id} link={link} />
+              <PressableCard key={link._id} link={link} refetch={refetch} />
             ))}
           </div>
 
@@ -125,7 +126,7 @@ export default function Links({ session }: { session?: any }) {
   );
 }
 
-function PressableCard({ link }: { link: Link }) {
+function PressableCard({ link, refetch }: { link: Link; refetch: () => void }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const params = encode({
@@ -182,7 +183,7 @@ function PressableCard({ link }: { link: Link }) {
               }}
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2">
             {/* <div>
               <Avatar
                 src={`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${link.url}&size=64`}
@@ -212,6 +213,25 @@ function PressableCard({ link }: { link: Link }) {
                     key="delete"
                     className="text-danger"
                     color="danger"
+                    onPress={async () => {
+                      await axios
+                        .delete(`/api/link/${link._id}`)
+                        .then(() => {
+                          addToast({
+                            title: 'Successfully deleted',
+                            description: 'Link has been deleted',
+                            color: 'success'
+                          });
+                          refetch();
+                        })
+                        .catch((error) => {
+                          addToast({
+                            title: 'Error deleting link',
+                            description: error.response.data.message,
+                            color: 'danger'
+                          });
+                        });
+                    }}
                   >
                     Delete
                   </DropdownItem>

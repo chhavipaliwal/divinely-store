@@ -7,6 +7,7 @@ export default async function getAllCategories() {
 
   const categories = await Category.find().lean();
   categories.sort((a, b) => a.name.localeCompare(b.name));
+
   return categories.map((category) => ({
     ...category,
     _id: category._id.toString()
