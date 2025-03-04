@@ -128,7 +128,7 @@ export default function New({ categories }: Props) {
                             }
                             key={index}
                             className="cursor-pointer hover:bg-danger-300"
-                            onPress={() => {
+                            onClick={() => {
                               formik.setFieldValue(
                                 'tags',
                                 formik.values.tags.filter(

@@ -254,7 +254,7 @@ export default function EditLink({ link, categories }: Props) {
                             }
                             key={index}
                             className="cursor-pointer hover:bg-danger-300"
-                            onPress={() => {
+                            onClick={() => {
                               formik.setFieldValue(
                                 'link.tags',
                                 formik.values.link.tags.filter(
