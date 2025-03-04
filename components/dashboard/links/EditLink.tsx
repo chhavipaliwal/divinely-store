@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Category, Link as ILink } from '@/lib/interface';
 import { humanReadableDate, humanReadableTime } from '@/functions/utility';
 import {
@@ -14,7 +14,8 @@ import {
   CardBody,
   CardFooter,
   Image,
-  Spinner
+  Spinner,
+  addToast
 } from '@heroui/react';
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
@@ -23,34 +24,46 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import slugify from 'slugify';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import getAllCategories from '@/server-actions/category';
 import { useRouter } from 'next/navigation';
-
+import * as Yup from 'yup';
 interface Props {
   link: ILink;
-  categories: Category[];
 }
 
-export default function EditLink({ link, categories }: Props) {
+export default function EditLink({ link }: Props) {
   const router = useRouter();
+  const [file, setFile] = useState<File | null>(null);
+
+  const { data } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => getAllCategories()
+  });
+
+  const categories = (data as Category[]) || [];
+
   const formik = useFormik({
     initialValues: {
       link,
-      file: new File([], ''),
       thumbnailPreview: link.thumbnail
     },
     onSubmit: async (values) => {
-      if (formik.values.file && formik.values.file.name) {
-        if (formik.values.file.size > 1000000) {
-          toast.error('File size should not exceed 1MB');
+      if (file && file.name) {
+        if (file.size > 1000000) {
+          addToast({
+            title: 'File size should not exceed 1MB',
+            color: 'danger'
+          });
           return;
         }
         const formData = new FormData();
         const filename = `${slugify(link.title, {
           trim: true,
           lower: true
-        })}.${formik.values.file.name.split('.').pop()}`;
+        })}.${file.name.split('.').pop()}`;
         console.log(filename);
-        formData.append('file', formik.values.file);
+        formData.append('file', file);
         formData.append('filename', filename);
         await axios
           .post(`/api/s3-upload`, formData)
@@ -58,7 +71,10 @@ export default function EditLink({ link, categories }: Props) {
             values.link.thumbnail = res.data.url;
           })
           .catch((error) => {
-            toast.error(error.response.data.message, { id: 'saving' });
+            addToast({
+              title: error.response.data.message,
+              color: 'danger'
+            });
           });
       } else {
         console.log('No file');
@@ -66,14 +82,18 @@ export default function EditLink({ link, categories }: Props) {
       await axios
         .put(`/api/link/${link._id}`, values.link)
         .then(() => {
-          // router.push(`/`);
-          toast.success('Link updated successfully', {
-            id: 'saving'
+          addToast({
+            title: 'Link updated successfully',
+            color: 'success'
           });
+          router.push(`/`);
         })
         .catch((error) => {
           console.log(error);
-          toast.error(error.response.data.message, { id: 'saving' });
+          addToast({
+            title: error.response.data.message,
+            color: 'danger'
+          });
         });
     }
   });
@@ -81,7 +101,7 @@ export default function EditLink({ link, categories }: Props) {
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      formik.setFieldValue('file', file);
+      setFile(file);
       const reader = new FileReader();
       reader.onload = () => {
         formik.setFieldValue('thumbnailPreview', reader.result);
@@ -92,7 +112,7 @@ export default function EditLink({ link, categories }: Props) {
 
   const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault(); // Prevent default to allow drop
-    formik.setFieldValue('file', e.dataTransfer.files[0]);
+    setFile(e.dataTransfer.files[0]);
     const reader = new FileReader();
     reader.onload = () => {
       formik.setFieldValue('thumbnailPreview', reader.result);
@@ -194,6 +214,12 @@ export default function EditLink({ link, categories }: Props) {
                   onChange={formik.handleChange}
                   name="link.title"
                   placeholder="Title"
+                  isInvalid={
+                    formik.touched.link?.title && formik.errors.link?.title
+                      ? true
+                      : false
+                  }
+                  errorMessage={formik.errors.link?.title}
                 />
               </dd>
             </div>
@@ -217,6 +243,12 @@ export default function EditLink({ link, categories }: Props) {
                   onChange={formik.handleChange}
                   name="link.url"
                   placeholder="URL"
+                  isInvalid={
+                    formik.touched.link?.url && formik.errors.link?.url
+                      ? true
+                      : false
+                  }
+                  errorMessage={formik.errors.link?.url}
                 />
               </dd>
             </div>
@@ -230,6 +262,13 @@ export default function EditLink({ link, categories }: Props) {
                   placeholder="Category"
                   selectedKeys={[formik.values.link.category]}
                   aria-label="Category"
+                  isInvalid={
+                    formik.touched.link?.category &&
+                    formik.errors.link?.category
+                      ? true
+                      : false
+                  }
+                  errorMessage={formik.errors.link?.category}
                 >
                   {categories.map((category) => (
                     <SelectItem key={category.uid}>{category.name}</SelectItem>
@@ -315,7 +354,6 @@ export default function EditLink({ link, categories }: Props) {
             </Button>
             <Button
               radius="full"
-              variant="flat"
               startContent={<IconCheck size={18} />}
               type="submit"
               color="primary"
