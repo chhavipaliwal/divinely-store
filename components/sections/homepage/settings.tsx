@@ -1,12 +1,7 @@
 'use client';
 import CellWrapper from '@/components/ui/cell-wrapper';
 import SwitchCell from '@/components/ui/switch-cell';
-import {
-  sortTypes,
-  SettingsProps,
-  defaultSettings,
-  useSettings
-} from '@/hooks/useSettings';
+
 import {
   Modal,
   ModalContent,
@@ -24,6 +19,7 @@ import {
 } from '@heroui/react';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { useForm } from './context';
 
 export default function Settings({
   isOpen,
@@ -34,10 +30,13 @@ export default function Settings({
   onOpenChange: (isOpen: boolean) => void;
   session?: any;
 }) {
-  const { settings, dispatch } = useSettings();
-  const handleSortChange = (newSortType: 'name' | 'date' | 'relevance') => {
-    dispatch({ type: 'UPDATE_SORT_TYPE', sortType: newSortType });
-  };
+  const { formik } = useForm();
+
+  const sortItems = [
+    { label: 'Title', value: 'title' },
+    { label: 'Date', value: 'date' },
+    { label: 'Relevance', value: 'relevance' }
+  ];
 
   return (
     <>
@@ -54,110 +53,87 @@ export default function Settings({
                 Settings
               </ModalHeader>
               <ModalBody>
-                <ScrollShadow className="flex flex-col gap-2">
-                  <SwitchCell
-                    description="Search amoung all the realms"
-                    label="Global Search"
-                    isSelected={settings.globalSearch}
-                    onChange={() =>
-                      dispatch({ type: 'TOGGLE', field: 'globalSearch' })
-                    }
-                  />
-                  <CellWrapper>
-                    <div>
-                      <p>Sort </p>
-                      <p className="text-small text-default-500">
-                        Sort the links by the name or the most recent
-                      </p>
-                    </div>
+                <SwitchCell
+                  description="Search amoung all the realms"
+                  label="Global Search"
+                />
+                <div
+                  className={
+                    'flex items-center justify-between gap-2 rounded-medium bg-default/50 p-4 backdrop-blur-lg'
+                  }
+                >
+                  <div>
+                    <p>Sort </p>
+                    <p className="text-small text-default-500">
+                      Sort the links by the name or the most recent
+                    </p>
+                  </div>
+                  <Select
+                    items={sortItems}
+                    selectedKeys={[formik.values.sortDescriptor.column]}
+                    onSelectionChange={(keys) => {
+                      formik.setFieldValue('sortDescriptor.column', keys);
+                    }}
+                    className="w-full"
+                  >
+                    {(item) => (
+                      <SelectItem key={item.value}>{item.label}</SelectItem>
+                    )}
+                  </Select>
+                </div>
+                <CellWrapper>
+                  <div>
+                    <p>Items per page</p>
+                    <p className="text-small text-default-500">
+                      Set the number of links to display per page
+                    </p>
+                  </div>
+                  <div className="flex w-full flex-wrap items-center justify-end gap-6 sm:w-auto sm:flex-nowrap">
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button variant="bordered" className="capitalize">
+                          12
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu>
+                        <DropdownItem key="12">12</DropdownItem>
+                        <DropdownItem key="20">20</DropdownItem>
+                        <DropdownItem key="50">50</DropdownItem>
+                        <DropdownItem key="100">100</DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+                  </div>
+                </CellWrapper>
+                {session ? (
+                  <CellWrapper className="justify-end">
                     <div className="flex w-full flex-wrap items-center justify-end gap-6 sm:w-auto sm:flex-nowrap">
-                      <Dropdown placement="bottom-end">
-                        <DropdownTrigger>
-                          <Button variant="bordered" className="capitalize">
-                            {settings.sortType}
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu aria-label="Set Sort">
-                          {sortTypes
-                            .sort((a, b) => a.label.localeCompare(b.label))
-                            .map((sortType) => (
-                              <DropdownItem
-                                key={sortType.value}
-                                onPress={() =>
-                                  handleSortChange(
-                                    sortType.value as SettingsProps['sortType']
-                                  )
-                                }
-                              >
-                                {sortType.label}
-                              </DropdownItem>
-                            ))}
-                        </DropdownMenu>
-                      </Dropdown>
-                    </div>
-                  </CellWrapper>
-                  <CellWrapper>
-                    <div>
-                      <p>Items per page</p>
-                      <p className="text-small text-default-500">
-                        Set the number of links to display per page
-                      </p>
-                    </div>
-                    <div className="flex w-full flex-wrap items-center justify-end gap-6 sm:w-auto sm:flex-nowrap">
-                      <Select
-                        aria-label="Items per page"
-                        className="w-28"
-                        selectedKeys={[settings.limit?.toString()]}
-                        onSelectionChange={(value) => {
-                          const selectedValue = Array.from(value)[0];
-                          dispatch({
-                            type: 'UPDATE_LIMIT',
-                            limit: Number(selectedValue)
-                          });
-                        }}
+                      <Button
+                        color="danger"
+                        variant="light"
+                        onPress={() => signOut()}
                       >
-                        <SelectItem key="12">Default</SelectItem>
-                        <SelectItem key="20">20</SelectItem>
-                        <SelectItem key="50">50</SelectItem>
-                        <SelectItem key="100">100</SelectItem>
-                      </Select>
+                        Logout
+                      </Button>
                     </div>
                   </CellWrapper>
-                  {session ? (
-                    <CellWrapper className="justify-end">
-                      <div className="flex w-full flex-wrap items-center justify-end gap-6 sm:w-auto sm:flex-nowrap">
-                        <Button
-                          color="danger"
-                          variant="light"
-                          onPress={() => signOut()}
-                        >
-                          Logout
-                        </Button>
-                      </div>
-                    </CellWrapper>
-                  ) : (
-                    <CellWrapper>
-                      <div>
-                        <p>Login</p>
-                        <p className="text-small text-default-500">
-                          Login to access more features
-                        </p>
-                      </div>
-                      <div className="flex w-full flex-wrap items-center justify-end gap-6 sm:w-auto sm:flex-nowrap">
-                        <Button as={Link} href="/auth/login" variant="bordered">
-                          Login
-                        </Button>
-                      </div>
-                    </CellWrapper>
-                  )}
-                </ScrollShadow>
+                ) : (
+                  <CellWrapper>
+                    <div>
+                      <p>Login</p>
+                      <p className="text-small text-default-500">
+                        Login to access more features
+                      </p>
+                    </div>
+                    <div className="flex w-full flex-wrap items-center justify-end gap-6 sm:w-auto sm:flex-nowrap">
+                      <Button as={Link} href="/auth/login" variant="bordered">
+                        Login
+                      </Button>
+                    </div>
+                  </CellWrapper>
+                )}
               </ModalBody>
               <ModalFooter>
-                <Button
-                  color="danger"
-                  variant="light"
-                  onPress={() => dispatch({ type: 'RESET', defaultSettings })}
-                >
+                <Button color="danger" variant="light">
                   Reset
                 </Button>
                 <Button color="default" onPress={onClose}>

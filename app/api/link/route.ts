@@ -6,45 +6,51 @@ import { auth } from '@/auth';
 export const GET = auth(async function GET(request: any) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = Number(searchParams.get('page')) || 1;
-    const limit = Number(searchParams.get('limit')) || 20;
-    const search = searchParams.get('search');
-    const category = searchParams.get('category');
+    const limit = parseInt(searchParams.get('limit') || '25', 10);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+
+    const query = searchParams.get('query')?.trim() || '';
+    const category = searchParams.get('category') || '';
+    const sort = {
+      column: searchParams.get('sortColumn') || 'title',
+      direction: searchParams.get('sortDirection') || 'ascending'
+    };
+
+    const searchQuery = {
+      ...(query
+        ? {
+            $or: [
+              { title: { $regex: new RegExp(query.trim(), 'ig') } },
+              { description: { $regex: new RegExp(query.trim(), 'ig') } },
+              { tags: { $regex: new RegExp(query.trim(), 'ig') } },
+              { url: { $regex: new RegExp(query.trim(), 'ig') } }
+            ].filter(Boolean) as any[]
+          }
+        : {}),
+      ...(category
+        ? { category: { $regex: new RegExp(category.trim(), 'ig') } }
+        : {})
+    };
 
     await connectDB();
 
-    // Build the search query if there's a search term
-    const searchQuery = {
-      ...(search
-        ? {
-            $or: [
-              { title: { $regex: search, $options: 'i' } },
-              { description: { $regex: search, $options: 'i' } },
-              { category: { $regex: search, $options: 'i' } },
-              { tags: { $elemMatch: { $regex: search, $options: 'i' } } }
-            ]
-          }
-        : {}),
-      ...(category ? { category } : {})
+    const sortObject: Record<string, 1 | -1> = {
+      [sort.column]: (sort.direction === 'ascending' ? 1 : -1) as 1 | -1
     };
-    // Paginate based on the page and limit
     const links = await Link.find(searchQuery)
-      .sort({ title: 1 })
+      .sort(sortObject)
       .skip((page - 1) * limit)
-      .limit(limit);
+      .limit(limit)
+      .lean()
+      .catch((error) => {
+        throw new Error(error.message);
+      });
 
-    const totalLinks = await Link.countDocuments(searchQuery);
-    const totalPages = Math.ceil(totalLinks / limit);
+    const total = await Link.countDocuments(searchQuery);
 
-    return NextResponse.json({
-      links,
-      pagination: {
-        page,
-        limit,
-        totalLinks,
-        totalPages
-      }
-    });
+    const totalPages = Math.ceil(total / limit);
+
+    return NextResponse.json({ links, total, totalPages });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: 'An error occurred' }, { status: 500 });

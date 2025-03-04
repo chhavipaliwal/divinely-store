@@ -1,7 +1,6 @@
 'use client';
 import { Link } from '@/lib/interface';
 import {
-  Avatar,
   Button,
   Card,
   CardBody,
@@ -11,80 +10,77 @@ import {
   DropdownTrigger,
   Image,
   Pagination,
-  ScrollShadow
-} from "@heroui/react";
+  SortDescriptor
+} from '@heroui/react';
 import axios from 'axios';
-import { parseAsInteger, useQueryState, useQueryStates } from 'nuqs';
 import { encode } from 'qss';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import useDebounce from '@/hooks/useDebounce';
-import { useSettings } from '@/hooks/useSettings';
 import Skeleton from '@/components/ui/skeleton';
 import { Icon } from '@iconify/react/dist/iconify.js';
+import { useQuery } from '@tanstack/react-query';
+import React from 'react';
+import { useQueryState } from 'nuqs';
+import { useForm } from './context';
+
+const getAllLinks = async (params: {
+  limit?: number;
+  page?: number;
+  sortColumn?: string;
+  sortDirection?: string;
+  query?: string;
+  category?: string;
+}): Promise<{
+  links: Link[];
+  total: number;
+  totalPages: number;
+}> => {
+  const res = await axios.get(`/api/link`, {
+    params: { ...params }
+  });
+  return res.data;
+};
 
 export default function Links({ session }: { session?: any }) {
-  const [links, setLinks] = useState<Link[]>([]);
-  const [category, setCategory] = useQueryState('category');
-  const [categoryHistory] = useState(category);
-  const [pages, setPages] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const { formik } = useForm();
 
-  const [query] = useQueryState('query');
-  const debouncedSearchTerm = useDebounce(query, 500);
-  const { settings, dispatch } = useSettings();
-  const [params, setParams] = useQueryStates({
-    limit: parseAsInteger.withDefault(settings.limit || 12),
-    page: parseAsInteger.withDefault(1)
+  const [searchQuery] = useQueryState('query');
+  const [category, setCategory] = useQueryState('category');
+  const query = useDebounce(searchQuery || '', 1000);
+
+  const { data, isLoading } = useQuery({
+    queryKey: [
+      'links',
+      formik.values.page,
+      formik.values.limit,
+      query,
+      category,
+      formik.values.sortDescriptor.column,
+      formik.values.sortDescriptor.direction
+    ],
+    queryFn: () =>
+      getAllLinks({
+        limit: formik.values.limit,
+        page: formik.values.page,
+        sortColumn: formik.values.sortDescriptor.column as string,
+        sortDirection: formik.values.sortDescriptor.direction,
+        query: query || '',
+        category: category || ''
+      })
   });
 
   useEffect(() => {
-    if (settings.globalSearch && debouncedSearchTerm) {
-      setCategory(null);
-    } else {
-      setCategory(categoryHistory);
+    if (data) {
+      formik.setFieldValue('pages', data?.totalPages);
     }
-  }, [debouncedSearchTerm]);
+  }, [data]);
 
   useEffect(() => {
-    const getData = async () => {
-      setIsLoading(true);
-      await axios
-        .get('/api/link', {
-          params: {
-            ...params,
-            category,
-            search: debouncedSearchTerm
-          }
-        })
-        .then((res) => {
-          setLinks(res.data.links);
-          setPages(res.data.pagination.totalPages);
-          if (res.data.pagination.totalPages < params.page) {
-            setParams({ page: res.data.pagination.totalPages });
-          }
-          setIsLoading(false);
-          //   scroll to to links
-          if (params.page > 1) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-        });
-    };
-    getData();
-  }, [category, debouncedSearchTerm, params]);
+    formik.setFieldValue('page', 1);
+    setCategory(null);
+  }, [query]);
 
-  const sortedLinks = useMemo(() => {
-    return links.sort((a, b) => {
-      if (settings.sortType === 'name') {
-        return a.title.localeCompare(b.title);
-      } else if (settings.sortType === 'date') {
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      } else {
-        return 0;
-      }
-    });
-  }, [links, settings.sortType]);
+  const links = data?.links || [];
 
   return (
     <div
@@ -96,12 +92,12 @@ export default function Links({ session }: { session?: any }) {
       ) : (
         <>
           <div className="mt-12 grid w-full gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {sortedLinks.map((link) => (
+            {links.map((link) => (
               <PressableCard key={link._id} link={link} />
             ))}
           </div>
 
-          {sortedLinks.length === 0 ? (
+          {links.length === 0 ? (
             <div className="flex flex-col items-center gap-4">
               <h1 className="text-2xl font-bold">No Refrences found!!!</h1>
               <p className="text-default-500">
@@ -115,10 +111,10 @@ export default function Links({ session }: { session?: any }) {
                 showControls
                 showShadow
                 color="primary"
-                page={params.page}
-                total={pages}
+                page={formik.values.page}
+                total={formik.values.pages}
                 onChange={(page) => {
-                  setParams({ page });
+                  formik.setFieldValue('page', page);
                 }}
               />
             </div>
