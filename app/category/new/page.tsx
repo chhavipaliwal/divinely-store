@@ -6,8 +6,9 @@ import {
   Input,
   Card,
   CardBody,
-  CardFooter
-} from "@heroui/react";
+  CardFooter,
+  addToast
+} from '@heroui/react';
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
 import { toast } from 'sonner';
@@ -25,11 +26,17 @@ export default function EditCategory() {
           method: 'POST',
           body: JSON.stringify(values)
         }).then(() => {
-          toast.success('Category added successfully');
+          addToast({
+            title: 'Category added successfully',
+            color: 'success'
+          });
           router.push('/category');
         });
       } catch (error) {
-        toast.error('Failed to add category');
+        addToast({
+          title: 'Failed to add category',
+          color: 'danger'
+        });
         console.error(error);
       }
     }

@@ -23,6 +23,7 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useQueryState } from 'nuqs';
 import { useForm } from './context';
+import { saveTableConfig } from '@/lib/localstorage-util';
 
 const getAllLinks = async (params: {
   limit?: number;
@@ -82,6 +83,10 @@ export default function Links() {
   }, [query]);
 
   const links = data?.links || [];
+
+  useEffect(() => {
+    saveTableConfig('links-homepage', formik.values);
+  }, [formik.values]);
 
   return (
     <div

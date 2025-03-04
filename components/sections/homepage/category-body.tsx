@@ -5,6 +5,7 @@ import getAllCategories from '@/server-actions/category';
 import { Icon } from '@iconify/react/dist/iconify.js';
 import {
   Button,
+  ButtonGroup,
   Chip,
   Dropdown,
   DropdownItem,
@@ -22,9 +23,7 @@ import { useEffect, useState } from 'react';
 import Links from './links';
 import Skeleton from '@/components/ui/skeleton';
 import Link from 'next/link';
-import Settings from './settings';
 import { useForm } from './context';
-import { AnimatePresence, motion } from 'framer-motion';
 
 export default function CategoryBody({ session }: { session?: any }) {
   const { formik } = useForm();
@@ -86,46 +85,56 @@ export default function CategoryBody({ session }: { session?: any }) {
               variant="bordered"
             />
 
-            <Dropdown placement="bottom-end">
-              <DropdownTrigger>
-                <Button isIconOnly variant="bordered">
-                  <Icon icon="solar:sort-vertical-linear" width={20} />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                selectedKeys={['title']}
-                closeOnSelect={false}
-                items={sortItems}
-              >
-                {(item) => (
-                  <DropdownItem
-                    key={item.value}
-                    onPress={() => {
-                      formik.setFieldValue('sortDescriptor.column', item.value);
-                      formik.setFieldValue(
-                        'sortDescriptor.direction',
-                        formik.values.sortDescriptor.column === item.value
-                          ? formik.values.sortDescriptor.direction ===
-                            'ascending'
-                            ? 'descending'
+            <ButtonGroup>
+              <Button as={Link} href="/settings" isIconOnly variant="bordered">
+                <Icon icon="solar:settings-linear" width={20} />
+              </Button>
+              <Dropdown placement="bottom-end">
+                <DropdownTrigger>
+                  <Button isIconOnly variant="bordered">
+                    <Icon icon="solar:sort-vertical-linear" width={20} />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  selectedKeys={['title']}
+                  closeOnSelect={false}
+                  items={sortItems}
+                >
+                  {(item) => (
+                    <DropdownItem
+                      key={item.value}
+                      onPress={() => {
+                        formik.setFieldValue(
+                          'sortDescriptor.column',
+                          item.value
+                        );
+                        formik.setFieldValue(
+                          'sortDescriptor.direction',
+                          formik.values.sortDescriptor.column === item.value
+                            ? formik.values.sortDescriptor.direction ===
+                              'ascending'
+                              ? 'descending'
+                              : 'ascending'
                             : 'ascending'
-                          : 'ascending'
-                      );
-                    }}
-                    endContent={
-                      formik.values.sortDescriptor.column === item.value && (
-                        <Icon
-                          icon={iconMap[formik.values.sortDescriptor.direction]}
-                          width={20}
-                        />
-                      )
-                    }
-                  >
-                    {item.label}
-                  </DropdownItem>
-                )}
-              </DropdownMenu>
-            </Dropdown>
+                        );
+                      }}
+                      endContent={
+                        formik.values.sortDescriptor.column === item.value && (
+                          <Icon
+                            icon={
+                              iconMap[formik.values.sortDescriptor.direction]
+                            }
+                            width={20}
+                          />
+                        )
+                      }
+                    >
+                      {item.label}
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+            </ButtonGroup>
           </div>
           {isLoading ? (
             <LoadingSkeleton />
@@ -181,11 +190,6 @@ export default function CategoryBody({ session }: { session?: any }) {
         </div>
         <Links />
       </div>
-      <Settings
-        isOpen={settingModal.isOpen}
-        onOpenChange={settingModal.onOpenChange}
-        session={session}
-      />
     </>
   );
 }

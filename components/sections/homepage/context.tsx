@@ -2,6 +2,7 @@
 import React, { createContext, useContext } from 'react';
 import { useFormik } from 'formik';
 import { SortDescriptor } from '@heroui/react';
+import { loadTableConfig } from '@/lib/localstorage-util';
 
 interface FormType {
   sortDescriptor: SortDescriptor;
@@ -14,19 +15,21 @@ interface FormContextType {
   formik: ReturnType<typeof useFormik<FormType>>;
 }
 
+const INITIAL_CONFIG = loadTableConfig('links-homepage') || {
+  sortDescriptor: {
+    column: 'title',
+    direction: 'ascending'
+  },
+  limit: 36,
+  page: 1,
+  pages: 1
+};
+
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
 export const FormProvider = ({ children }: { children: React.ReactNode }) => {
   const formik = useFormik<FormType>({
-    initialValues: {
-      sortDescriptor: {
-        column: 'title',
-        direction: 'ascending'
-      },
-      limit: 36,
-      page: 1,
-      pages: 1
-    },
+    initialValues: INITIAL_CONFIG,
     onSubmit: async (values) => {
       console.log(values);
     }
