@@ -1,5 +1,5 @@
 'use client';
-import { Avatar, Button, Input } from "@heroui/react";
+import { Avatar, Button, Input } from '@heroui/react';
 import { useFormik } from 'formik';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -167,7 +167,7 @@ const ForgotPassword = () => {
                       <p>Didn&apos;t receive the code?</p>
                       <span
                         className="cursor-pointer select-none text-primary hover:underline"
-                        onClick={resendOtp}
+                        onPress={resendOtp}
                       >
                         Resend Code
                       </span>

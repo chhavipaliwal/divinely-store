@@ -9,13 +9,11 @@ import {
   Input,
   ScrollShadow,
   useDisclosure
-} from "@heroui/react";
+} from '@heroui/react';
 import { useQueryState } from 'nuqs';
 import { useEffect, useState } from 'react';
 import Links from './links';
-import { useSettings } from '@/hooks/useSettings';
 import Skeleton from '@/components/ui/skeleton';
-import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import Settings from './settings';
 
@@ -24,7 +22,6 @@ export default function CategoryBody({ session }: { session?: any }) {
   const settingModal = useDisclosure();
   const [selected, setSelected] = useQueryState('category');
   const [query, setQuery] = useQueryState('query');
-  const { settings, dispatch } = useSettings();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
