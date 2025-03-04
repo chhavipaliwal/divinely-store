@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from "@heroui/react";
+import { Button } from '@heroui/react';
 import axios from 'axios';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -40,7 +40,7 @@ export default function Page() {
         accept="image/*"
         name="file"
       />
-      <Button isLoading={isLoading} color="primary" onClick={handleSubmit}>
+      <Button isLoading={isLoading} color="primary" onPress={handleSubmit}>
         Upload
       </Button>
     </>

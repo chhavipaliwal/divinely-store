@@ -1,12 +1,10 @@
 'use client';
 import { cn } from '@/lib/utils';
-import { Button } from "@heroui/react";
+import { Button } from '@heroui/react';
 import Link from 'next/link';
 import { useQueryState } from 'nuqs';
 
 export default function CategoryHeader() {
-  const [category] = useQueryState('category');
-
   const handleExploreClick = () => {
     const categoryBodyElement = document.getElementById('category-body');
     if (categoryBodyElement) {
@@ -16,7 +14,6 @@ export default function CategoryHeader() {
 
   return (
     <>
-      {/* {!category && ( */}
       <div
         className={cn(
           'mb-12 flex flex-col items-center gap-4 overflow-hidden p-2 px-4 md:px-8'
@@ -31,7 +28,7 @@ export default function CategoryHeader() {
           resources.
         </p>
         <div className="flex items-center gap-4">
-          <Button onClick={handleExploreClick} color="primary">
+          <Button onPress={handleExploreClick} color="primary">
             Explore
           </Button>
           <Button
@@ -43,7 +40,6 @@ export default function CategoryHeader() {
           </Button>
         </div>
       </div>
-      {/* )} */}
     </>
   );
 }

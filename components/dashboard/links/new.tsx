@@ -13,7 +13,7 @@ import {
   Select,
   SelectItem,
   Textarea
-} from "@heroui/react";
+} from '@heroui/react';
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
@@ -128,7 +128,7 @@ export default function New({ categories }: Props) {
                             }
                             key={index}
                             className="cursor-pointer hover:bg-danger-300"
-                            onClick={() => {
+                            onPress={() => {
                               formik.setFieldValue(
                                 'tags',
                                 formik.values.tags.filter(

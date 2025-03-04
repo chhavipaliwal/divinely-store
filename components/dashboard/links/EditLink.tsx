@@ -15,7 +15,7 @@ import {
   CardFooter,
   Image,
   Spinner
-} from "@heroui/react";
+} from '@heroui/react';
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
 import { Icon } from '@iconify/react/dist/iconify.js';
@@ -254,7 +254,7 @@ export default function EditLink({ link, categories }: Props) {
                             }
                             key={index}
                             className="cursor-pointer hover:bg-danger-300"
-                            onClick={() => {
+                            onPress={() => {
                               formik.setFieldValue(
                                 'link.tags',
                                 formik.values.link.tags.filter(
