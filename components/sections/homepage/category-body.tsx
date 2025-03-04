@@ -9,7 +9,7 @@ import {
   Input,
   ScrollShadow,
   useDisclosure
-} from '@nextui-org/react';
+} from "@heroui/react";
 import { useQueryState } from 'nuqs';
 import { useEffect, useState } from 'react';
 import Links from './links';

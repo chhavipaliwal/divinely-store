@@ -25,7 +25,7 @@ const Sonner = () => {
         showSpinner={false}
         shadow="false"
         easing="ease"
-        color="hsl(var(--nextui-primary))"
+        color="hsl(var(--heroui-primary))"
       />
       <Toaster theme={theme} richColors closeButton />
     </>

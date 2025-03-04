@@ -10,7 +10,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger
-} from '@nextui-org/react';
+} from "@heroui/react";
 import { toast } from 'sonner';
 
 export default function ModeToggle() {

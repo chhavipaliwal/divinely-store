@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
-import { Button } from '@nextui-org/react';
+import { Button } from "@heroui/react";
 const UserDashboard = () => {
   const { data: session } = useSession();
   return (

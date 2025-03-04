@@ -1,6 +1,6 @@
 'use client';
 import { Icon } from '@iconify/react/dist/iconify.js';
-import { Avatar, Button, Divider, Input } from '@nextui-org/react';
+import { Avatar, Button, Divider, Input } from "@heroui/react";
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { useFormik } from 'formik';

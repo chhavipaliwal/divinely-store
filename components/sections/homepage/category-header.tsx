@@ -1,6 +1,6 @@
 'use client';
 import { cn } from '@/lib/utils';
-import { Button } from '@nextui-org/react';
+import { Button } from "@heroui/react";
 import Link from 'next/link';
 import { useQueryState } from 'nuqs';
 
