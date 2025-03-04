@@ -167,7 +167,7 @@ const ForgotPassword = () => {
                       <p>Didn&apos;t receive the code?</p>
                       <span
                         className="cursor-pointer select-none text-primary hover:underline"
-                        onPress={resendOtp}
+                        onClick={resendOtp}
                       >
                         Resend Code
                       </span>
