@@ -6,8 +6,15 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 import {
   Button,
   Chip,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Input,
   ScrollShadow,
+  Select,
+  SelectItem,
+  Tooltip,
   useDisclosure
 } from '@heroui/react';
 import { useQueryState } from 'nuqs';
@@ -16,8 +23,11 @@ import Links from './links';
 import Skeleton from '@/components/ui/skeleton';
 import Link from 'next/link';
 import Settings from './settings';
+import { useForm } from './context';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function CategoryBody({ session }: { session?: any }) {
+  const { formik } = useForm();
   const [categories, setCategories] = useState<Category[]>([]);
   const settingModal = useDisclosure();
   const [selected, setSelected] = useQueryState('category');
@@ -32,6 +42,22 @@ export default function CategoryBody({ session }: { session?: any }) {
     };
     getData();
   }, []);
+
+  const iconMap = {
+    ascending: 'solar:sort-from-top-to-bottom-linear',
+    descending: 'solar:sort-from-bottom-to-top-linear'
+  };
+
+  const sortItems = [
+    {
+      label: 'Title',
+      value: 'title'
+    },
+    {
+      label: 'Created At',
+      value: 'createdAt'
+    }
+  ];
 
   return (
     <>
@@ -53,11 +79,53 @@ export default function CategoryBody({ session }: { session?: any }) {
                 mainWrapper: 'backdrop-blur-lg bg-transparent',
                 inputWrapper: 'backdrop-blur-lg bg-transparent'
               }}
+              isClearable
+              onClear={() => {
+                setQuery(null);
+              }}
               variant="bordered"
             />
-            <Button isIconOnly variant="bordered" onPress={settingModal.onOpen}>
-              <Icon icon="mingcute:settings-7-line" width={20} />
-            </Button>
+
+            <Dropdown placement="bottom-end">
+              <DropdownTrigger>
+                <Button isIconOnly variant="bordered">
+                  <Icon icon="solar:sort-vertical-linear" width={20} />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                selectedKeys={['title']}
+                closeOnSelect={false}
+                items={sortItems}
+              >
+                {(item) => (
+                  <DropdownItem
+                    key={item.value}
+                    onPress={() => {
+                      formik.setFieldValue('sortDescriptor.column', item.value);
+                      formik.setFieldValue(
+                        'sortDescriptor.direction',
+                        formik.values.sortDescriptor.column === item.value
+                          ? formik.values.sortDescriptor.direction ===
+                            'ascending'
+                            ? 'descending'
+                            : 'ascending'
+                          : 'ascending'
+                      );
+                    }}
+                    endContent={
+                      formik.values.sortDescriptor.column === item.value && (
+                        <Icon
+                          icon={iconMap[formik.values.sortDescriptor.direction]}
+                          width={20}
+                        />
+                      )
+                    }
+                  >
+                    {item.label}
+                  </DropdownItem>
+                )}
+              </DropdownMenu>
+            </Dropdown>
           </div>
           {isLoading ? (
             <LoadingSkeleton />

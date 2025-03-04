@@ -2,7 +2,6 @@
 import { cn } from '@/lib/utils';
 import { Button } from '@heroui/react';
 import Link from 'next/link';
-import { useQueryState } from 'nuqs';
 
 export default function CategoryHeader() {
   const handleExploreClick = () => {
