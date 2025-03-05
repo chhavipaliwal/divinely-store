@@ -195,7 +195,7 @@ function PressableCard({ link, refetch }: { link: Link; refetch: () => void }) {
               />
             </div> */}
             <div className="flex flex-col">
-              <h3>{link.title}</h3>
+              <h3 className="line-clamp-1">{link.title}</h3>
               <p className="line-clamp-1" title={link.description}>
                 {link.description}
               </p>
