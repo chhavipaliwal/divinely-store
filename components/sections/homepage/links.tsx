@@ -171,7 +171,7 @@ function PressableCard({ link, refetch }: { link: Link; refetch: () => void }) {
                   ? link.thumbnail
                   : isError
                     ? 'https://heroui.com/images/hero-card-complete.jpeg'
-                    : ''
+                    : src
               }
               onLoad={() => {
                 setIsLoading(false);
@@ -189,13 +189,10 @@ function PressableCard({ link, refetch }: { link: Link; refetch: () => void }) {
             />
           </div>
           <div className="flex items-center justify-between gap-2">
-            {/* <div>
-              <Avatar
-                src={`https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${link.url}&size=64`}
-              />
-            </div> */}
             <div className="flex flex-col">
-              <h3 className="line-clamp-1">{link.title}</h3>
+              <h3 className="line-clamp-1" title={link.title}>
+                {link.title}
+              </h3>
               <p className="line-clamp-1" title={link.description}>
                 {link.description}
               </p>
