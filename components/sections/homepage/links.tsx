@@ -5,18 +5,12 @@ import {
   Button,
   Card,
   CardBody,
-  cn,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
   Image,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  Pagination,
-  SortDescriptor
+  Pagination
 } from '@heroui/react';
 import axios from 'axios';
 import { encode } from 'qss';
@@ -28,9 +22,7 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useQueryState } from 'nuqs';
 import { useForm } from './context';
-import { saveTableConfig } from '@/lib/localstorage-util';
-import { signIn, useSession } from 'next-auth/react';
-import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 const getAllLinks = async (params: {
   limit?: number;
@@ -64,15 +56,15 @@ export default function Links() {
       formik.values.limit,
       query,
       category,
-      formik.values.sortDescriptor.column,
-      formik.values.sortDescriptor.direction
+      formik.values.sort.column,
+      formik.values.sort.direction
     ],
     queryFn: () =>
       getAllLinks({
         limit: formik.values.limit,
         page: formik.values.page,
-        sortColumn: formik.values.sortDescriptor.column as string,
-        sortDirection: formik.values.sortDescriptor.direction,
+        sortColumn: formik.values.sort.column as string,
+        sortDirection: formik.values.sort.direction,
         query: query || '',
         category: category || ''
       })
@@ -100,7 +92,7 @@ export default function Links() {
         <LoadingSkeleton />
       ) : (
         <>
-          <div className="mt-12 flex w-full items-start gap-2">
+          <div className="mt-4 flex w-full items-start gap-2">
             <p className="text-default-500">
               Showing {links.length} items out of {data?.total}
             </p>

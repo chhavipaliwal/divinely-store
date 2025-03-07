@@ -1,5 +1,5 @@
 import Settings from '@/components/sections/homepage/settings/settings';
-import { getConfig, setConfig } from '@/server-actions/cookies';
+import { getConfig } from '@/server-actions/cookies';
 
 export default async function page() {
   const config = await getConfig({ name: 'config' });

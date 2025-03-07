@@ -19,3 +19,12 @@ export const categories = [
   { name: 'Utilities', uid: 'utilities' },
   { name: 'Docs', uid: 'docs' }
 ];
+
+export const DEFAULT_CONFIG = {
+  limit: 36,
+  globalSearch: true,
+  sort: {
+    column: 'title',
+    direction: 'ascending'
+  }
+};

@@ -12,11 +12,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Input,
-  ScrollShadow,
-  Select,
-  SelectItem,
-  Tooltip,
-  useDisclosure
+  ScrollShadow
 } from '@heroui/react';
 import { useQueryState } from 'nuqs';
 import { useEffect, useState } from 'react';
@@ -24,11 +20,11 @@ import Links from './links';
 import Skeleton from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useForm } from './context';
+import { setConfig } from '@/server-actions/cookies';
 
 export default function CategoryBody({ session }: { session?: any }) {
   const { formik } = useForm();
   const [categories, setCategories] = useState<Category[]>([]);
-  const settingModal = useDisclosure();
   const [selected, setSelected] = useQueryState('category');
   const [query, setQuery] = useQueryState('query');
   const [isLoading, setIsLoading] = useState(true);
@@ -104,25 +100,24 @@ export default function CategoryBody({ session }: { session?: any }) {
                     <DropdownItem
                       key={item.value}
                       onPress={() => {
+                        formik.setFieldValue('sort.column', item.value);
                         formik.setFieldValue(
-                          'sortDescriptor.column',
-                          item.value
-                        );
-                        formik.setFieldValue(
-                          'sortDescriptor.direction',
-                          formik.values.sortDescriptor.column === item.value
-                            ? formik.values.sortDescriptor.direction ===
-                              'ascending'
+                          'sort.direction',
+                          formik.values.sort.column === item.value
+                            ? formik.values.sort.direction === 'ascending'
                               ? 'descending'
                               : 'ascending'
                             : 'ascending'
                         );
                       }}
                       endContent={
-                        formik.values.sortDescriptor.column === item.value && (
+                        formik.values.sort.column === item.value && (
                           <Icon
                             icon={
-                              iconMap[formik.values.sortDescriptor.direction]
+                              iconMap[
+                                formik.values.sort
+                                  .direction as keyof typeof iconMap
+                              ]
                             }
                             width={20}
                           />
