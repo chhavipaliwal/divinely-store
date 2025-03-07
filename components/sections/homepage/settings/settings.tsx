@@ -199,6 +199,7 @@ export default function Settings({ config }: { config: any }) {
             aria-label="Global search"
             isSelected={formik.values.globalSearch}
             onChange={formik.handleChange}
+            isDisabled
           />
         </CellWrapper>
         <CellWrapper>
