@@ -12,7 +12,9 @@ const linkSchema = new mongoose.Schema<LinkInterface>(
     image: String,
     addedBy: String,
     modifiedBy: String,
-    thumbnail: String
+    thumbnail: String,
+    isEditorsPick: Boolean,
+    isFeatured: Boolean
   },
   {
     timestamps: true
