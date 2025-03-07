@@ -1,15 +1,20 @@
 'use client';
-import { Link } from '@/lib/interface';
+import { Link as LinkType } from '@/lib/interface';
 import {
   addToast,
   Button,
   Card,
   CardBody,
+  cn,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
   Image,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
   Pagination,
   SortDescriptor
 } from '@heroui/react';
@@ -24,6 +29,8 @@ import React from 'react';
 import { useQueryState } from 'nuqs';
 import { useForm } from './context';
 import { saveTableConfig } from '@/lib/localstorage-util';
+import { signIn, useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 const getAllLinks = async (params: {
   limit?: number;
@@ -33,7 +40,7 @@ const getAllLinks = async (params: {
   query?: string;
   category?: string;
 }): Promise<{
-  links: Link[];
+  links: LinkType[];
   total: number;
   totalPages: number;
 }> => {
@@ -131,9 +138,17 @@ export default function Links() {
   );
 }
 
-function PressableCard({ link, refetch }: { link: Link; refetch: () => void }) {
+function PressableCard({
+  link,
+  refetch
+}: {
+  link: LinkType;
+  refetch: () => void;
+}) {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const { data: session } = useSession();
+
   const params = encode({
     url: link.url,
     screenshot: true,
@@ -146,6 +161,12 @@ function PressableCard({ link, refetch }: { link: Link; refetch: () => void }) {
     'viewport.height': 800
   });
   const src = `https://api.microlink.io/?${params}`;
+
+  const handleLike = () => {
+    if (!session?.user) {
+      signIn();
+    }
+  };
 
   return (
     <>
@@ -162,7 +183,23 @@ function PressableCard({ link, refetch }: { link: Link; refetch: () => void }) {
         }}
       >
         <CardBody className="gap-2">
-          <div className="w-full">
+          <div className="relative w-full">
+            <Button
+              isIconOnly
+              className="absolute right-3 top-3 z-20 bg-background/60 backdrop-blur-md backdrop-saturate-150 dark:bg-default-100/50"
+              radius="full"
+              size="sm"
+              variant="flat"
+              onPress={handleLike}
+            >
+              <Icon
+                className={cn('text-default-900/50', {
+                  // "text-danger-400": isLiked,
+                })}
+                icon="solar:heart-bold"
+                width={16}
+              />
+            </Button>
             <Image
               isBlurred
               isLoading={isLoading}
@@ -208,12 +245,28 @@ function PressableCard({ link, refetch }: { link: Link; refetch: () => void }) {
                   <DropdownItem key="view" target="_BLANK" href={link.url}>
                     View
                   </DropdownItem>
-                  <DropdownItem key="edit" href={`/${link._id}/edit`}>
+                  <DropdownItem
+                    className={
+                      session?.user?.role === 'admin'
+                        ? ''
+                        : session?.user?.email === link.addedBy
+                          ? ''
+                          : 'hidden'
+                    }
+                    key="edit"
+                    href={`/${link._id}/edit`}
+                  >
                     Edit
                   </DropdownItem>
                   <DropdownItem
+                    className={`text-danger ${
+                      session?.user?.role === 'admin'
+                        ? ''
+                        : session?.user?.email === link.addedBy
+                          ? ''
+                          : 'hidden'
+                    }`}
                     key="delete"
-                    className="text-danger"
                     color="danger"
                     onPress={async () => {
                       await axios

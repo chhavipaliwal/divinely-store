@@ -1,29 +1,26 @@
 'use client';
-import { addToast, Avatar, Button, Input } from '@heroui/react';
+import { addToast, Avatar, Button, InputOtp, Input } from '@heroui/react';
 import { useFormik } from 'formik';
 import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import * as Yup from 'yup';
 import axios from 'axios';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot
-} from '@/components/ui/input-otp';
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useQueryState } from 'nuqs';
+import { sendOtp, updatePassword, verifyOtp } from '@/server-actions/auth';
 
 const ForgotPassword = () => {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [count, setCount] = useState(0);
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [email, setEmail] = useQueryState('email', {
+    defaultValue: ''
+  });
 
   const formik = useFormik({
     initialValues: {
-      id: '',
+      id: email,
       otp: ''
     },
     validationSchema: Yup.object({
@@ -32,14 +29,19 @@ const ForgotPassword = () => {
     onSubmit: async (values) => {
       try {
         if (values.otp) {
-          verifyOtp();
-        } else {
-          const res = await axios.post('/api/auth/forgot-password', values);
-          addToast({
-            title: res.data.message,
-            color: 'success'
+          await verifyOtp({ email: values.id, otp: values.otp }).then(() => {
+            setIsVerified(true);
           });
-          setIsOtpSent(true);
+        } else {
+          await sendOtp({ email: values.id, type: 'forgot-password' }).then(
+            () => {
+              addToast({
+                title: 'OTP sent successfully',
+                color: 'success'
+              });
+              setIsOtpSent(true);
+            }
+          );
         }
       } catch (error: any) {
         console.log(error);
@@ -50,11 +52,6 @@ const ForgotPassword = () => {
       }
     }
   });
-
-  useEffect(() => {
-    const sp = searchParams.get('id') ?? '';
-    formik.setFieldValue('id', sp);
-  }, []);
 
   useEffect(() => {
     if (count > 5) {
@@ -87,49 +84,12 @@ const ForgotPassword = () => {
     }
   };
 
-  const verifyOtp = async () => {
-    try {
-      const res = await axios.post('/api/auth/verify-otp', {
-        id: formik.values.id,
-        otp: parseInt(formik.values.otp)
-      });
-      addToast({
-        title: res.data.message,
-        color: 'success'
-      });
-      setIsVerified(true);
-    } catch (error: any) {
-      setCount(count + 1);
-      console.log(error);
-      addToast({
-        title: error.response.data.message,
-        color: 'danger'
-      });
-    }
-  };
-
-  const handleIdInput = (value: string) => {
-    const sp = new URLSearchParams(searchParams);
-    if (value.trim() === '') {
-      sp.delete('id');
-    } else {
-      sp.set('id', value);
-    }
-    router.push(`${pathname}?${sp.toString()}`);
-  };
-
-  useEffect(() => {
-    if (formik.values.otp.length === 4) {
-      formik.handleSubmit();
-    }
-  }, [formik.values.otp]);
-
   return (
     <>
       <div className="mt-12 flex h-full w-full flex-col items-center justify-center">
         <div className="mt-2 flex w-full max-w-sm flex-col gap-4 rounded-large bg-content1 px-8 py-6 shadow-small">
           <div className="flex flex-col items-center pb-6">
-            <Avatar src="/logo.svg" className="p-2" size="lg" />
+            <Avatar src="/logo.png" className="p-2" size="lg" />
             <p className="mb-4 text-xl font-medium">
               {isVerified
                 ? 'Reset Password'
@@ -154,12 +114,13 @@ const ForgotPassword = () => {
             >
               {!isOtpSent && (
                 <Input
-                  label="Email / Phone Number"
+                  autoFocus
+                  label="Email"
                   name="id"
                   variant="bordered"
                   onChange={(e) => {
-                    handleIdInput(e.target.value);
                     formik.setFieldValue('id', e.target.value);
+                    setEmail(e.target.value);
                   }}
                   value={formik.values.id}
                   isInvalid={
@@ -173,17 +134,19 @@ const ForgotPassword = () => {
               {isOtpSent && (
                 <>
                   <div className="mb-2 flex flex-col items-center justify-center">
-                    <InputOTP
-                      maxLength={4}
+                    <InputOtp
+                      length={4}
                       value={formik.values.otp}
-                      onChange={(value) => formik.setFieldValue('otp', value)}
-                    >
-                      <InputOTPGroup>
-                        {Array.from({ length: 4 }).map((_, index) => (
-                          <InputOTPSlot index={index} key={index} />
-                        ))}
-                      </InputOTPGroup>
-                    </InputOTP>
+                      autoFocus
+                      onValueChange={(value) =>
+                        formik.setFieldValue('otp', value)
+                      }
+                      onComplete={() => formik.handleSubmit()}
+                      isInvalid={
+                        formik.touched.otp && formik.errors.otp ? true : false
+                      }
+                      errorMessage={formik.errors.otp}
+                    />
                     <div className="mt-4 flex flex-col items-center justify-between px-1 py-2 text-small text-default-500">
                       <p>Didn&apos;t receive the code?</p>
                       <span
@@ -228,7 +191,9 @@ interface UpdatePasswordProps {
 }
 
 const UpdatePassword = ({ id }: UpdatePasswordProps) => {
-  const searchParams = useSearchParams();
+  const [email, setEmail] = useQueryState('email', {
+    defaultValue: ''
+  });
   const router = useRouter();
   const formik = useFormik({
     initialValues: {
@@ -245,10 +210,7 @@ const UpdatePassword = ({ id }: UpdatePasswordProps) => {
     }),
     onSubmit: async (values) => {
       try {
-        await axios.post('/api/auth/update-password', {
-          id: id || searchParams.get('id'),
-          password: values.password
-        });
+        await updatePassword({ email, password: values.password });
         addToast({
           title: 'Password updated successfully',
           color: 'success'

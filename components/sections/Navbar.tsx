@@ -12,7 +12,7 @@ import {
   NavbarMenu,
   NavbarMenuItem,
   Divider
-} from "@heroui/react";
+} from '@heroui/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -52,7 +52,7 @@ const Navbar = () => {
           <Image
             alt="logo"
             height={40}
-            src="/logo.svg"
+            src="/logo.png"
             className="rounded-full bg-foreground p-2"
             width={40}
           />
