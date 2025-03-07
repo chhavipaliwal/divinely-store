@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   CardBody,
+  Chip,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -164,7 +165,7 @@ function PressableCard({
       <Card
         isHoverable
         isPressable
-        className="backdrop-blur-md hover:bg-default-200/30"
+        className="relative backdrop-blur-md hover:bg-default-200/30"
         onPress={() => {
           window.open(link.url, '_blank');
         }}
@@ -175,6 +176,16 @@ function PressableCard({
           }
         }}
       >
+        {new Date(link.createdAt) >
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
+          <Chip
+            size="sm"
+            color="primary"
+            className="absolute right-2 top-2 z-50"
+          >
+            New
+          </Chip>
+        )}
         <CardBody className="gap-2">
           <div className="relative w-full">
             {/* <Button
