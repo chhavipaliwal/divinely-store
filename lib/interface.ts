@@ -12,6 +12,7 @@ export interface User extends Base {
   password: string;
   name: string;
   role: 'admin' | 'user';
+  likedLinks: string[];
 }
 
 export interface Link extends Base {

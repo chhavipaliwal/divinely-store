@@ -162,12 +162,6 @@ function PressableCard({
   });
   const src = `https://api.microlink.io/?${params}`;
 
-  const handleLike = () => {
-    if (!session?.user) {
-      signIn();
-    }
-  };
-
   return (
     <>
       <Card
@@ -178,13 +172,15 @@ function PressableCard({
           window.open(link.url, '_blank');
         }}
         onContextMenu={(e) => {
-          e.preventDefault();
-          window.open(`/${link._id}/edit`, '_blank');
+          if (session?.user?.role === 'admin') {
+            e.preventDefault();
+            window.open(`/${link._id}/edit`, '_blank');
+          }
         }}
       >
         <CardBody className="gap-2">
           <div className="relative w-full">
-            <Button
+            {/* <Button
               isIconOnly
               className="absolute right-3 top-3 z-20 bg-background/60 backdrop-blur-md backdrop-saturate-150 dark:bg-default-100/50"
               radius="full"
@@ -199,7 +195,7 @@ function PressableCard({
                 icon="solar:heart-bold"
                 width={16}
               />
-            </Button>
+            </Button> */}
             <Image
               isBlurred
               isLoading={isLoading}
