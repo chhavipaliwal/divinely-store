@@ -2,29 +2,36 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@iconify/react/dist/iconify.js';
-import { Avatar, Button, Link, Input, addToast } from '@heroui/react';
+import {
+  Avatar,
+  Button,
+  Link,
+  Input,
+  addToast,
+  InputOtp,
+  Spinner,
+  Form
+} from '@heroui/react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { toast } from 'sonner';
 import { signIn } from 'next-auth/react';
 import React from 'react';
 import axios from 'axios';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot
-} from '@/components/ui/input-otp';
+import { sendOtp, verifyOtp } from '@/server-actions/auth';
+import { cn } from '@/lib/utils';
+import { parseAsBoolean, useQueryState } from 'nuqs';
 
 export default function Register() {
   const [isOtpSent, setIsOtpSent] = useState(false);
+
   const searchParams = useSearchParams();
   const [isVerified, setIsVerified] = useState(false);
   const [count, setCount] = useState(0);
+  const [email, setEmail] = useQueryState('email', {
+    defaultValue: ''
+  });
 
-  useEffect(() => {
-    const sp = searchParams.get('id') ?? '';
-    formik.setFieldValue('id', sp);
-  }, [searchParams.get('id')]);
+  console.log(isOtpSent);
 
   useEffect(() => {
     const sp = searchParams.get('otp') ?? '';
@@ -39,35 +46,33 @@ export default function Register() {
 
   const formik = useFormik({
     initialValues: {
-      id: '',
+      id: email,
       otp: '',
       password: '',
       confirmPassword: '',
-      isChecked: false
+      isChecked: false,
+      isResending: false
     },
     onSubmit: async (values) => {
       try {
         if (values.otp) {
-          verifyOtp();
+          await verifyOtp({ email: values.id, otp: values.otp })
+            .then(() => {
+              setIsVerified(true);
+            })
+            .catch((e) => {
+              formik.setFieldError('otp', e.message);
+            });
         } else {
-          const res = await axios.post('/api/auth/register/send-otp', values);
-          addToast({
-            title: res.data.message,
-            color: 'success'
+          await sendOtp({ email: values.id, type: 'register' }).then(() => {
+            setIsOtpSent(true);
           });
-          setIsOtpSent(true);
         }
       } catch (e) {
         console.error(e);
       }
     }
   });
-
-  useEffect(() => {
-    if (formik.values.otp.length === 4) {
-      formik.handleSubmit();
-    }
-  }, [formik.values.otp]);
 
   useEffect(() => {
     if (count > 5) {
@@ -82,43 +87,25 @@ export default function Register() {
     }
   }, [count]);
 
-  const verifyOtp = async () => {
-    try {
-      console.log(formik.values.id, formik.values.otp);
-      const res = await axios.post('/api/auth/verify-otp', {
-        id: formik.values.id,
-        otp: parseInt(formik.values.otp)
-      });
-      addToast({
-        title: res.data.message,
-        color: 'success'
-      });
-      setIsVerified(true);
-    } catch (error: any) {
-      setCount(count + 1);
-      console.log(error);
-      addToast({
-        title: error.response.data.message,
-        color: 'danger'
-      });
-    }
-  };
-
   const resendOtp = async () => {
+    formik.setFieldValue('isResending', true);
     try {
-      const res = await axios.post('/api/auth/register/send-otp', {
-        id: formik.values.id
-      });
+      await sendOtp({ email: formik.values.id, type: 'register' });
+      setIsOtpSent(true);
+      setCount(0);
+      formik.setFieldValue('otp', '');
       addToast({
-        title: res.data.message,
+        title: 'OTP sent successfully',
         color: 'success'
       });
     } catch (error: any) {
-      console.log(error);
       addToast({
-        title: error.response.data.message,
+        title: error.message,
         color: 'danger'
       });
+      console.error(error);
+    } finally {
+      formik.setFieldValue('isResending', false);
     }
   };
 
@@ -127,7 +114,7 @@ export default function Register() {
       <div className="mt-12 flex h-full w-full flex-col items-center justify-center">
         <div className="mt-2 flex w-full max-w-sm flex-col justify-center gap-4 rounded-large bg-content1 px-8 py-6 shadow-small">
           <div className="flex flex-col items-center pb-6">
-            <Avatar src="/logo.svg" className="p-2" size="lg" />
+            <Avatar src="/logo.png" className="p-2" size="lg" />
             <p className="text-xl font-medium">
               {isVerified
                 ? 'Complete Profile'
@@ -135,37 +122,52 @@ export default function Register() {
                   ? 'Enter OTP'
                   : 'Welcome'}
             </p>
-            <p className="text-small text-default-500">
+            <p className="text-center text-small text-default-500">
               {isVerified
                 ? 'Enter your details to continue'
                 : isOtpSent
                   ? `We have send a verification code to ${formik.values.id}`
-                  : 'Enter your email / phone number to register'}
+                  : 'Enter your email to register'}
             </p>
           </div>
           {isVerified ? (
             <DetailForm />
           ) : (
             <>
-              {!isOtpSent && <IdInput />}
+              {!isOtpSent && (
+                <IdInput
+                  onSubmit={() => {
+                    setIsOtpSent(true);
+                  }}
+                />
+              )}
               {isOtpSent && (
                 <>
                   <div className="mb-2 flex flex-col items-center justify-center">
-                    <InputOTP
-                      maxLength={4}
+                    <InputOtp
+                      length={4}
                       value={formik.values.otp}
-                      onChange={(value) => formik.setFieldValue('otp', value)}
-                    >
-                      <InputOTPGroup>
-                        {Array.from({ length: 4 }).map((_, index) => (
-                          <InputOTPSlot index={index} key={index} />
-                        ))}
-                      </InputOTPGroup>
-                    </InputOTP>
+                      autoFocus
+                      onValueChange={(value) =>
+                        formik.setFieldValue('otp', value)
+                      }
+                      onComplete={() => formik.handleSubmit()}
+                      isInvalid={
+                        formik.touched.otp && formik.errors.otp ? true : false
+                      }
+                      errorMessage={formik.errors.otp}
+                    />
+
                     <div className="mt-4 flex flex-col items-center justify-between px-1 py-2 text-small text-default-500">
                       <p>Didn&apos;t receive the code?</p>
                       <span
-                        className="cursor-pointer select-none text-primary hover:underline"
+                        className={cn(
+                          'cursor-pointer select-none text-primary hover:underline',
+                          {
+                            'pointer-events-none opacity-50 hover:no-underline':
+                              formik.values.isResending
+                          }
+                        )}
                         onClick={resendOtp}
                       >
                         Resend Code
@@ -189,42 +191,38 @@ export default function Register() {
   );
 }
 
-const IdInput = () => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+const IdInput = ({ onSubmit }: { onSubmit: () => void }) => {
+  const [email, setEmail] = useQueryState('email', {
+    defaultValue: ''
+  });
 
-  useEffect(() => {
-    const sp = searchParams.get('id') ?? '';
-    formik.setFieldValue('id', sp);
-  }, []);
-
-  const handleIdInput = (value: string) => {
-    const sp = new URLSearchParams(searchParams);
-    if (value.trim() === '') {
-      sp.delete('id');
-    } else {
-      sp.set('id', value);
-    }
-    router.push(`${pathname}?${sp.toString()}`);
-  };
   const formik = useFormik({
     initialValues: {
-      id: ''
+      email: email
     },
     validationSchema: Yup.object({
-      id: Yup.string().required('Email or Phone Number is required')
+      email: Yup.string()
+        .email('Invalid email')
+        .min(3, 'Email must be at least 3 characters long')
+        .max(50, 'Email must be less than 50 characters long')
+        .required('Email is required')
     }),
     onSubmit: async (values) => {
       try {
-        const res = await axios.post('/api/auth/register/send-otp', values);
-        addToast({
-          title: res.data.message,
-          color: 'success'
-        });
-        const sp = new URLSearchParams(searchParams);
-        sp.set('otp', 'true');
-        router.push(`${pathname}?${sp.toString()}`);
+        await sendOtp({ email: values.email, type: 'register' })
+          .then(() => {
+            addToast({
+              title: 'OTP sent successfully',
+              color: 'success'
+            });
+            onSubmit();
+          })
+          .catch((e) => {
+            addToast({
+              title: e.message,
+              color: 'danger'
+            });
+          });
       } catch (error: any) {
         addToast({
           title: error.response.data.message,
@@ -234,24 +232,28 @@ const IdInput = () => {
       }
     }
   });
+
   return (
     <>
       <form className="flex flex-col gap-3">
         <Input
-          label="Email / Phone Number"
-          name="id"
+          isRequired
+          label="Email"
+          name="email"
           variant="bordered"
+          value={formik.values.email}
           onChange={(e) => {
-            handleIdInput(e.target.value);
-            formik.setFieldValue('id', e.target.value);
+            formik.setFieldValue('email', e.target.value);
+            setEmail(e.target.value);
           }}
-          value={formik.values.id}
-          isInvalid={formik.touched.id && formik.errors.id ? true : false}
-          errorMessage={formik.errors.id}
+          errorMessage={formik.errors.email}
+          type="email"
+          isInvalid={formik.touched.email && formik.errors.email ? true : false}
         />
         <Button
           color="primary"
           type="submit"
+          fullWidth
           isLoading={formik.isSubmitting}
           onPress={() => formik.handleSubmit()}
         >
@@ -267,17 +269,14 @@ const DetailForm = () => {
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const toggleVisibility = () => setIsVisible(!isVisible);
   const toggleConfirmVisibility = () => setIsConfirmVisible(!isConfirmVisible);
+  const [email, setEmail] = useQueryState('email', {
+    defaultValue: ''
+  });
 
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const sp = searchParams.get('id') ?? '';
-    formik.setFieldValue('id', sp);
-  }, []);
   const formik = useFormik({
     initialValues: {
       name: '',
-      id: '',
+      id: email,
       password: '',
       confirmPassword: '',
       isChecked: false
@@ -287,7 +286,7 @@ const DetailForm = () => {
         .required('Name is required')
         .min(3, "Name can't be less than 3 characters")
         .max(50, "Name can't be more than 50 characters"),
-      id: Yup.string().required('Email or Phone Number is required'),
+      id: Yup.string().required('Email is required'),
       password: Yup.string()
         .min(8, 'Password must be at least 8 characters long')
         .required('Password is required'),
@@ -298,7 +297,7 @@ const DetailForm = () => {
     onSubmit: async (values) => {
       // call api /api/auth/register
       try {
-        const res = await axios.post('/api/auth/register', values);
+        await axios.post('/api/auth/register', values);
         await signIn('credentials', {
           id: values.id,
           password: values.password,
@@ -318,7 +317,7 @@ const DetailForm = () => {
     <>
       <form className="flex flex-col gap-3" onSubmit={formik.handleSubmit}>
         <Input
-          label="Email / Phone Number"
+          label="Email"
           name="id"
           variant="bordered"
           onChange={(e) => {

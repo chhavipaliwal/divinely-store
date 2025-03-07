@@ -22,7 +22,7 @@ const SignIn = () => {
       password: ''
     },
     validationSchema: Yup.object({
-      id: Yup.string().required('Email / Phone number is required'),
+      id: Yup.string().required('Email is required'),
       password: Yup.string().required('Password is required')
     }),
     onSubmit: async (values) => {
@@ -32,9 +32,10 @@ const SignIn = () => {
           password: values.password,
           redirect: false
         }).then((res) => {
+          console.log(res);
           if (res?.error) {
             addToast({
-              title: res.error,
+              title: res.code,
               color: 'danger'
             });
           } else if (res?.ok) {
@@ -50,7 +51,7 @@ const SignIn = () => {
     <div className="mt-12 flex h-full w-full flex-col items-center justify-center">
       <div className="mt-2 flex w-full max-w-sm flex-col gap-4 rounded-large bg-content1 px-8 py-6 shadow-small">
         <div className="flex flex-col items-center pb-6">
-          <Avatar src="/logo.svg" className="p-2" size="lg" />
+          <Avatar src="/logo.png" className="p-2" size="lg" />
           <p className="text-xl font-medium">Welcome Back</p>
           <p className="text-small text-default-500">
             Log in to your account to continue
@@ -58,7 +59,7 @@ const SignIn = () => {
         </div>
         <form className="flex flex-col gap-3" onSubmit={formik.handleSubmit}>
           <Input
-            label="Email / Phone Number"
+            label="Email"
             name="id"
             variant="bordered"
             onChange={formik.handleChange}
