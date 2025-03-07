@@ -91,20 +91,21 @@ export default function Links() {
 
   const links = data?.links || [];
 
-  useEffect(() => {
-    saveTableConfig('links-homepage', formik.values);
-  }, [formik.values]);
-
   return (
     <div
       id="links"
-      className="relative flex flex-col items-center gap-12 px-4 md:px-8"
+      className="relative flex flex-col items-center gap-2 px-4 md:px-8"
     >
       {isLoading ? (
         <LoadingSkeleton />
       ) : (
         <>
-          <div className="mt-12 grid w-full gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-12 flex w-full items-start gap-2">
+            <p className="text-default-500">
+              Showing {links.length} items out of {data?.total}
+            </p>
+          </div>
+          <div className="grid w-full gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {links.map((link) => (
               <PressableCard key={link._id} link={link} refetch={refetch} />
             ))}
