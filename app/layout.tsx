@@ -3,7 +3,8 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import Sonner from '@/components/providers';
 import { Providers } from './providers';
-import Breadcrumb from '@/components/Breadcrumb';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   title: 'Divinely Store - Divinely Developer',
@@ -32,6 +33,8 @@ export default function RootLayout({
             </div>
             <Sonner />
           </ThemeProvider>
+          <SpeedInsights />
+          <Analytics />
         </Providers>
       </body>
     </html>
