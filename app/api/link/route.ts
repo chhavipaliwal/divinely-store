@@ -34,9 +34,19 @@ export const GET = auth(async function GET(request: any) {
 
     await connectDB();
 
-    const sortObject: Record<string, 1 | -1> = {
-      [sort.column]: (sort.direction === 'ascending' ? 1 : -1) as 1 | -1
-    };
+    let sortObject: any;
+    if (sort.column === 'relevance') {
+      sortObject = {
+        isFeatured: -1,
+        isEditorsPick: -1,
+        createdAt: -1
+      };
+    } else {
+      sortObject = {
+        [sort.column]: (sort.direction === 'ascending' ? 1 : -1) as 1 | -1
+      };
+    }
+
     const links = await Link.find(searchQuery)
       .sort(sortObject)
       .skip((page - 1) * limit)

@@ -25,6 +25,8 @@ export interface Link extends Base {
   slug: string;
   status: 'open' | 'closed';
   thumbnail: string;
+  isEditorsPick: boolean;
+  isFeatured: boolean;
 }
 
 export interface Category extends Base {

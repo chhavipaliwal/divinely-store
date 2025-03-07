@@ -176,15 +176,33 @@ function PressableCard({
           }
         }}
       >
-        {new Date(link.createdAt) >
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
+        {link.isFeatured ? (
           <Chip
             size="sm"
             color="primary"
-            className="absolute right-2 top-2 z-50"
+            className="absolute right-2 top-2 z-50 bg-purple-500 font-bold"
           >
-            New
+            Featured
           </Chip>
+        ) : link.isEditorsPick ? (
+          <Chip
+            size="sm"
+            color="primary"
+            className="absolute right-2 top-2 z-50 bg-blue-500 font-bold"
+          >
+            Editor's Pick
+          </Chip>
+        ) : (
+          new Date(link.createdAt) >
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
+            <Chip
+              size="sm"
+              color="primary"
+              className="absolute right-2 top-2 z-50"
+            >
+              New
+            </Chip>
+          )
         )}
         <CardBody className="gap-2">
           <div className="relative w-full">

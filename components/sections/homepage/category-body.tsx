@@ -51,6 +51,10 @@ export default function CategoryBody({ session }: { session?: any }) {
     {
       label: 'Created At',
       value: 'createdAt'
+    },
+    {
+      label: 'Relevance',
+      value: 'relevance'
     }
   ];
 
