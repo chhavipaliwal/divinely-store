@@ -20,15 +20,7 @@ import { useFormik } from 'formik';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { Icon } from '@iconify/react/dist/iconify.js';
-
-const defaultConfig = {
-  limit: 36,
-  globalSearch: true,
-  sort: {
-    column: 'title',
-    direction: 'ascending'
-  }
-};
+import { DEFAULT_CONFIG } from '@/lib/config';
 
 export default function Settings({ config }: { config: any }) {
   const { theme, setTheme } = useTheme();
@@ -55,8 +47,8 @@ export default function Settings({ config }: { config: any }) {
   });
 
   const handleReset = async () => {
-    await setConfig({ name: 'config', value: defaultConfig }).then(() => {
-      formik.setValues(defaultConfig);
+    await setConfig({ name: 'config', value: DEFAULT_CONFIG }).then(() => {
+      formik.setValues(DEFAULT_CONFIG);
       addToast({
         title: 'Settings reset',
         description: 'Your settings have been reset to default'
