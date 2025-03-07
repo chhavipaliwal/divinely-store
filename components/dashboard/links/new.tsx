@@ -14,7 +14,8 @@ import {
   SelectItem,
   Textarea,
   Image,
-  addToast
+  addToast,
+  Switch
 } from '@heroui/react';
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
@@ -52,7 +53,9 @@ export default function NewLink() {
       category: '',
       thumbnail: '',
       tags: [],
-      thumbnailPreview: ''
+      thumbnailPreview: '',
+      isFeatured: false,
+      isEditorsPick: false
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -294,6 +297,28 @@ export default function NewLink() {
                     formik.setFieldValue('tags', e.target.value.split(','));
                   }}
                   placeholder="Add Tags"
+                />
+              </dd>
+            </div>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6">Featured</dt>
+              <dd className="mt-1 space-y-2 text-sm leading-6 sm:col-span-2 sm:mt-0">
+                <Switch
+                  aria-label="Featured"
+                  isSelected={formik.values.isFeatured}
+                  onChange={formik.handleChange}
+                  name="isFeatured"
+                />
+              </dd>
+            </div>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6">Editor's Pick</dt>
+              <dd className="mt-1 space-y-2 text-sm leading-6 sm:col-span-2 sm:mt-0">
+                <Switch
+                  aria-label="Editor's Pick"
+                  isSelected={formik.values.isEditorsPick}
+                  onChange={formik.handleChange}
+                  name="isEditorsPick"
                 />
               </dd>
             </div>

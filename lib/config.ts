@@ -24,7 +24,7 @@ export const DEFAULT_CONFIG = {
   limit: 36,
   globalSearch: true,
   sort: {
-    column: 'title',
-    direction: 'ascending'
+    column: 'relevance',
+    direction: 'descending'
   }
 };
