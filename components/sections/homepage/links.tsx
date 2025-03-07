@@ -190,7 +190,7 @@ function PressableCard({
             color="primary"
             className="absolute right-2 top-2 z-50 bg-blue-500 font-bold"
           >
-            Editor's Pick
+            Editor&apos;s Pick
           </Chip>
         ) : (
           new Date(link.createdAt) >
