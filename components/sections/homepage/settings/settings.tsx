@@ -65,6 +65,10 @@ export default function Settings({ config }: { config: any }) {
 
   const sortItems = [
     {
+      label: 'Relevance',
+      value: 'relevance'
+    },
+    {
       label: 'Title',
       value: 'title'
     },

@@ -45,16 +45,16 @@ export default function CategoryBody({ session }: { session?: any }) {
 
   const sortItems = [
     {
+      label: 'Relevance',
+      value: 'relevance'
+    },
+    {
       label: 'Title',
       value: 'title'
     },
     {
       label: 'Created At',
       value: 'createdAt'
-    },
-    {
-      label: 'Relevance',
-      value: 'relevance'
     }
   ];
 

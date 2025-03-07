@@ -15,7 +15,8 @@ import {
   CardFooter,
   Image,
   Spinner,
-  addToast
+  addToast,
+  Switch
 } from '@heroui/react';
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
@@ -317,6 +318,29 @@ export default function EditLink({ link }: Props) {
                     );
                   }}
                   placeholder="Add Tags"
+                />
+              </dd>
+            </div>
+
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6">Featured</dt>
+              <dd className="mt-1 space-y-2 text-sm leading-6 sm:col-span-2 sm:mt-0">
+                <Switch
+                  aria-label="Featured"
+                  isSelected={formik.values.link.isFeatured}
+                  onChange={formik.handleChange}
+                  name="link.isFeatured"
+                />
+              </dd>
+            </div>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6">Editor's Pick</dt>
+              <dd className="mt-1 space-y-2 text-sm leading-6 sm:col-span-2 sm:mt-0">
+                <Switch
+                  aria-label="Editor's Pick"
+                  isSelected={formik.values.link.isEditorsPick}
+                  onChange={formik.handleChange}
+                  name="link.isEditorsPick"
                 />
               </dd>
             </div>
