@@ -1,0 +1,15 @@
+digraph INFRA {
+  node [ color = "black", fillcolor = "#E6E6E6", height =1, style = "filled,bold,rounded", fontname = "Arial" ];
+  "S3Client" [ label = "S3Client
+(AWS::S3::Client)", shape =cylinder, fillcolor = "#FFF5CD" ];
+  "R2Bucket" [ label = "R2Bucket
+(Cloudflare::R2::Bucket)", shape =cylinder, fillcolor = "#FFF5CD" ];
+  "UploadFunction" [ label = "UploadFunction
+(AWS::Lambda::Function)", shape =rectangle, fillcolor = "#B7E0FF" ];
+  "DeleteFunction" [ label = "DeleteFunction
+(AWS::Lambda::Function)", shape =rectangle, fillcolor = "#B7E0FF" ];
+  "UploadFunction" -> "S3Client";
+  "UploadFunction" -> "R2Bucket";
+  "DeleteFunction" -> "S3Client";
+  "DeleteFunction" -> "R2Bucket";
+}
