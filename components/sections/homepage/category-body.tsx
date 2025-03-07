@@ -243,7 +243,7 @@ function LoadingSkeleton() {
         {[...Array(10)].map((_, index) => (
           <Skeleton
             key={`loading-skeleton-${index}`}
-            className="h-10 w-24 rounded-xl"
+            className="h-10 w-24 min-w-24 rounded-xl"
           />
         ))}
       </div>
