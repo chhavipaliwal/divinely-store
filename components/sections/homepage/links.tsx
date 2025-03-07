@@ -94,7 +94,11 @@ export default function Links() {
         <>
           <div className="mt-4 flex w-full items-start gap-2">
             <p className="text-default-500">
-              Showing {links.length} items out of {data?.total}
+              Showing {formik.values.limit * (formik.values.page - 1) + 1}-
+              {formik.values.limit * formik.values.page > (data?.total || 0)
+                ? data?.total
+                : formik.values.limit * formik.values.page}{' '}
+              items out of {data?.total}
             </p>
           </div>
           <div className="grid w-full gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
