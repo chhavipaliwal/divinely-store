@@ -39,6 +39,7 @@ export const GET = auth(async function GET(request: any) {
       sortObject = {
         isFeatured: -1,
         isEditorsPick: -1,
+        title: 1,
         createdAt: -1
       };
     } else {
