@@ -53,8 +53,13 @@ export default function Links() {
   const { formik } = useForm();
 
   const [searchQuery] = useQueryState('query');
-  const [category, setCategory] = useQueryState('category');
+  const [category] = useQueryState('category');
   const query = useDebounce(searchQuery || '', 1000);
+
+  // Reset page when query or category changes
+  useEffect(() => {
+    formik.setFieldValue('page', 1);
+  }, [query, category]);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: [
@@ -82,11 +87,6 @@ export default function Links() {
       formik.setFieldValue('pages', data?.totalPages);
     }
   }, [data]);
-
-  useEffect(() => {
-    formik.setFieldValue('page', 1);
-    setCategory(null);
-  }, [query]);
 
   const links = data?.links || [];
 
