@@ -20,7 +20,7 @@ import {
 import { IconCheck } from '@tabler/icons-react';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import getAllCategories from '@/server-actions/category';
 import axios from 'axios';
@@ -124,6 +124,21 @@ export default function NewLink() {
     e.currentTarget.classList.remove('border-primary'); // Remove highlight
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey && e.key === 's') {
+        e.preventDefault();
+        if (formik.isSubmitting) return;
+        formik.handleSubmit();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
     <>
       <div>
@@ -151,6 +166,10 @@ export default function NewLink() {
                 className="relative mx-auto flex min-w-80 max-w-xl items-center justify-center overflow-hidden rounded-3xl"
                 onDragOver={(e) => {
                   e.preventDefault(); // Prevent default to allow drop
+                  e.currentTarget.classList.add('border-primary');
+                }}
+                onDragLeave={(e) => {
+                  e.currentTarget.classList.remove('border-primary');
                 }}
                 onDrop={handleDrop}
               >
@@ -170,10 +189,33 @@ export default function NewLink() {
                 className={cn(
                   'group mx-auto mb-4 flex aspect-video w-full max-w-3xl items-center justify-center rounded-large border !border-b border-dashed border-default p-4 pb-4 transition-all hover:border-default-400',
                   {
-                    '!border-danger-500': formik.errors.thumbnail
+                    '!border-danger-500': formik.errors.thumbnail,
+                    'border-primary': false
                   }
                 )}
-                onDrop={handleDrop}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.currentTarget.classList.add('border-primary');
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.remove('border-primary');
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const droppedFile = e.dataTransfer.files[0];
+                  if (droppedFile && droppedFile.type.startsWith('image/')) {
+                    setFile(droppedFile);
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      formik.setFieldValue('thumbnailPreview', reader.result);
+                    };
+                    reader.readAsDataURL(droppedFile);
+                  }
+                  e.currentTarget.classList.remove('border-primary');
+                }}
               >
                 <div className="flex flex-col items-center">
                   <Icon icon="uim:image-v" width="48" />
