@@ -1,7 +1,6 @@
 'use client';
 import React, { createContext, useContext } from 'react';
 import { useFormik } from 'formik';
-import { SortDescriptor } from '@heroui/react';
 import { DEFAULT_CONFIG } from '@/lib/config';
 
 interface FormType {

@@ -28,12 +28,8 @@ export default function Settings({ config }: { config: any }) {
 
   const formik = useFormik({
     initialValues: {
-      limit: config.limit || 36,
-      globalSearch: config.globalSearch || true,
-      sort: config.sort || {
-        column: config.sort?.column || 'title',
-        direction: config.sort?.direction || 'ascending'
-      }
+      ...DEFAULT_CONFIG,
+      ...config
     },
     onSubmit: async (values) => {
       await setConfig({ name: 'config', value: values }).then(() => {
