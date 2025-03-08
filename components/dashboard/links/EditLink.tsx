@@ -28,7 +28,6 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import getAllCategories from '@/server-actions/category';
 import { useRouter } from 'next/navigation';
-import * as Yup from 'yup';
 interface Props {
   link: ILink;
 }
