@@ -155,7 +155,7 @@ export default function CategoryBody({ session }: { session?: any }) {
       <div className="sticky top-0 z-20 flex flex-col gap-2 bg-background/70 px-4 py-2 backdrop-blur-lg md:flex-row md:items-center md:gap-4 md:px-8 md:py-4">
         <div className="flex gap-2">
           <Input
-            className="min-w-72 backdrop-blur-sm"
+            className="w-full max-w-72 backdrop-blur-sm sm:min-w-72"
             placeholder="Search the realm..."
             value={query || ''}
             onChange={(e) => handleQueryChange(e.target.value)}

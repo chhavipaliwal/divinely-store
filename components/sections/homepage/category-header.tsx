@@ -1,7 +1,31 @@
 'use client';
 import { cn } from '@/lib/utils';
 import { Button } from '@heroui/react';
+import { Icon } from '@iconify/react/dist/iconify.js';
 import Link from 'next/link';
+
+const socialLinks = [
+  {
+    icon: 'mdi:github',
+    href: 'https://github.com/imankitkalirawana',
+    label: 'GitHub'
+  },
+  {
+    icon: 'mdi:twitter',
+    href: 'https://x.com/divinely_dev',
+    label: 'Twitter'
+  },
+  {
+    icon: 'mdi:linkedin',
+    href: 'https://www.linkedin.com/in/divinelydeveloper/',
+    label: 'LinkedIn'
+  },
+  {
+    icon: 'mdi:discord',
+    href: 'https://discord.gg/J3XKCw8pAh',
+    label: 'Discord'
+  }
+];
 
 export default function CategoryHeader() {
   const handleExploreClick = () => {
@@ -37,6 +61,20 @@ export default function CategoryHeader() {
           >
             Contribute
           </Button>
+        </div>
+        <div className="flex items-center gap-2">
+          {socialLinks.map((link) => (
+            <Button
+              key={link.href}
+              isIconOnly
+              as={Link}
+              href={link.href}
+              variant="flat"
+              target="_blank"
+            >
+              <Icon icon={link.icon} width={20} />
+            </Button>
+          ))}
         </div>
       </div>
     </>
