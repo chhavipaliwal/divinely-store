@@ -7,7 +7,11 @@ const linkSchema = new mongoose.Schema<LinkInterface>(
     title: String,
     description: String,
     tags: [String],
-    url: String,
+    url: {
+      type: String,
+      required: true,
+      unique: true
+    },
     slug: String,
     image: String,
     addedBy: String,
