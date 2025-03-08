@@ -25,6 +25,6 @@ export const DEFAULT_CONFIG = {
   globalSearch: true,
   sort: {
     column: 'relevance',
-    direction: 'descending'
+    direction: 'ascending'
   }
 };
