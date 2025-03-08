@@ -34,31 +34,54 @@ export const GET = auth(async function GET(request: any) {
 
     await connectDB();
 
-    let sortObject: any;
-    if (sort.column === 'relevance') {
-      sortObject = {
-        isFeatured: -1,
-        isEditorsPick: -1,
-        title: 1,
-        createdAt: -1
-      };
-    } else {
-      sortObject = {
-        [sort.column]: (sort.direction === 'ascending' ? 1 : -1) as 1 | -1
-      };
+    let pipeline = [];
+
+    // Add search conditions if any
+    if (Object.keys(searchQuery).length > 0) {
+      pipeline.push({ $match: searchQuery });
     }
 
-    const links = await Link.find(searchQuery)
-      .sort(sortObject)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean()
-      .catch((error) => {
-        throw new Error(error.message);
+    if (sort.column === 'relevance') {
+      // Add a priority field for sorting
+      pipeline.push({
+        $addFields: {
+          sortPriority: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$isFeatured', true] }, then: 3 },
+                { case: { $eq: ['$isEditorsPick', true] }, then: 2 },
+                { case: { $eq: ['$isFeatured', false] }, then: 1 }
+              ],
+              default: 0
+            }
+          }
+        }
       });
 
-    const total = await Link.countDocuments(searchQuery);
+      // Sort by priority, creation date, and title
+      pipeline.push({
+        $sort: {
+          sortPriority: -1 as const,
+          createdAt: -1 as const,
+          title: 1 as const
+        }
+      });
+    } else {
+      pipeline.push({
+        $sort: {
+          [sort.column]: (sort.direction === 'ascending' ? 1 : -1) as 1 | -1
+        }
+      });
+    }
 
+    // Add pagination
+    pipeline.push({ $skip: (page - 1) * limit }, { $limit: limit });
+
+    const links = await Link.aggregate(pipeline).catch((error) => {
+      throw new Error(error.message);
+    });
+
+    const total = await Link.countDocuments(searchQuery);
     const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({ links, total, totalPages });
