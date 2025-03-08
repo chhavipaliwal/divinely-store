@@ -7,11 +7,11 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://divinely.store'),
+  metadataBase: new URL('https://store.divinely.dev'),
   title:
     'Divinely Store - Resource Management Platform for Developers & Designers',
   description:
-    'Divinely Store is a modern link management platform that helps developers and designers organize, categorize, and share web resources. Access a curated collection of free tools, assets, and essential development resources.',
+    'Divinely Store is a modern resource management platform that helps developers and designers organize, categorize, and share web resources. Access a curated collection of free tools, assets, and essential development resources.',
   keywords:
     'divinely store, resource management, web development tools, design resources, link organization, developer tools, designer resources, free assets, web resources, resource categorization, link management platform, developer essentials, design assets, open source resources, productivity tools, web development, UI/UX resources, coding resources, development assets, tech resources',
   authors: [{ name: 'Divinely Developer' }],
