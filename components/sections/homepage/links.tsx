@@ -15,7 +15,7 @@ import {
 } from '@heroui/react';
 import axios from 'axios';
 import { encode } from 'qss';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import useDebounce from '@/hooks/useDebounce';
 import Skeleton from '@/components/ui/skeleton';
 import { Icon } from '@iconify/react/dist/iconify.js';
@@ -144,181 +144,154 @@ function PressableCard({
   refetch: () => void;
 }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
   const { data: session } = useSession();
 
-  const params = encode({
-    url: link.url,
-    screenshot: true,
-    meta: false,
-    embed: 'screenshot.url',
-    colorScheme: 'dark',
-    'viewport.isMobile': true,
-    'viewport.deviceScaleFactor': 1,
-    'viewport.width': 1236,
-    'viewport.height': 800
-  });
-  const src = `https://api.microlink.io/?${params}`;
+  const src = useMemo(() => {
+    return `https://api.microlink.io/?${encode({
+      url: link.url,
+      screenshot: true,
+      meta: false,
+      embed: 'screenshot.url',
+      colorScheme: 'dark',
+      'viewport.isMobile': true,
+      'viewport.deviceScaleFactor': 1,
+      'viewport.width': 1236,
+      'viewport.height': 800
+    })}`;
+  }, [link.url]);
+
+  const isAdmin =
+    session?.user?.role === 'admin' || session?.user?.email === link.addedBy;
+
+  const onPress = useCallback(() => {
+    window.open(link.url, '_blank');
+  }, [link.url]);
+
+  const onContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      if (session?.user?.role === 'admin') {
+        e.preventDefault();
+        window.open(`/${link._id}/edit`, '_blank');
+      }
+    },
+    [session, link._id]
+  );
+
+  const onDelete = async () => {
+    try {
+      await axios.delete(`/api/link/${link._id}`);
+      addToast({
+        title: 'Successfully deleted',
+        description: 'Link has been deleted',
+        color: 'success'
+      });
+      refetch();
+    } catch (error: any) {
+      addToast({
+        title: 'Error deleting link',
+        description: error.response.data.message,
+        color: 'danger'
+      });
+    }
+  };
+
+  const renderChip = () => {
+    if (link.isFeatured) {
+      return (
+        <Chip
+          size="sm"
+          color="primary"
+          className="absolute right-2 top-2 z-50 bg-purple-500 font-bold"
+        >
+          Featured
+        </Chip>
+      );
+    }
+    if (link.isEditorsPick) {
+      return (
+        <Chip
+          size="sm"
+          color="primary"
+          className="absolute right-2 top-2 z-50 bg-blue-500 font-bold"
+        >
+          Editor&apos;s Pick
+        </Chip>
+      );
+    }
+    if (
+      new Date(link.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    ) {
+      return (
+        <Chip size="sm" color="primary" className="absolute right-2 top-2 z-50">
+          New
+        </Chip>
+      );
+    }
+    return null;
+  };
 
   return (
-    <>
-      <Card
-        isHoverable
-        isPressable
-        className="relative backdrop-blur-md hover:bg-default-200/30"
-        onPress={() => {
-          window.open(link.url, '_blank');
-        }}
-        onContextMenu={(e) => {
-          if (session?.user?.role === 'admin') {
-            e.preventDefault();
-            window.open(`/${link._id}/edit`, '_blank');
-          }
-        }}
-      >
-        {link.isFeatured ? (
-          <Chip
-            size="sm"
-            color="primary"
-            className="absolute right-2 top-2 z-50 bg-purple-500 font-bold"
-          >
-            Featured
-          </Chip>
-        ) : link.isEditorsPick ? (
-          <Chip
-            size="sm"
-            color="primary"
-            className="absolute right-2 top-2 z-50 bg-blue-500 font-bold"
-          >
-            Editor&apos;s Pick
-          </Chip>
-        ) : (
-          new Date(link.createdAt) >
-            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
-            <Chip
-              size="sm"
-              color="primary"
-              className="absolute right-2 top-2 z-50"
-            >
-              New
-            </Chip>
-          )
-        )}
-        <CardBody className="gap-2">
-          <div className="relative w-full">
-            {/* <Button
-              isIconOnly
-              className="absolute right-3 top-3 z-20 bg-background/60 backdrop-blur-md backdrop-saturate-150 dark:bg-default-100/50"
-              radius="full"
-              size="sm"
-              variant="flat"
-              onPress={handleLike}
-            >
-              <Icon
-                className={cn('text-default-900/50', {
-                  // "text-danger-400": isLiked,
-                })}
-                icon="solar:heart-bold"
-                width={16}
-              />
-            </Button> */}
-            <Image
-              isBlurred
-              isLoading={isLoading}
-              src={
-                link.thumbnail
-                  ? link.thumbnail
-                  : isError
-                    ? 'https://heroui.com/images/hero-card-complete.jpeg'
-                    : src
-              }
-              onLoad={() => {
-                setIsLoading(false);
-              }}
-              onError={() => {
-                setIsError(true);
-              }}
-              loading="lazy"
-              alt={link.title}
-              className="mb-4 aspect-video w-full bg-default-200 object-cover"
-              width={600}
-              classNames={{
-                wrapper: 'aspect-video'
-              }}
-            />
+    <Card
+      isHoverable
+      isPressable
+      className="relative backdrop-blur-md hover:bg-default-200/30"
+      onPress={onPress}
+      onContextMenu={onContextMenu}
+    >
+      {renderChip()}
+      <CardBody className="gap-2">
+        <div className="relative w-full">
+          <Image
+            isBlurred
+            isLoading={isLoading}
+            src={link.thumbnail || src}
+            onLoad={() => setIsLoading(false)}
+            loading="lazy"
+            alt={link.title}
+            className="mb-4 aspect-video w-full bg-default-200 object-cover"
+            width={600}
+            classNames={{ wrapper: 'aspect-video' }}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col">
+            <h3 className="line-clamp-1" title={link.title}>
+              {link.title}
+            </h3>
+            <p className="line-clamp-1" title={link.description}>
+              {link.description}
+            </p>
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex flex-col">
-              <h3 className="line-clamp-1" title={link.title}>
-                {link.title}
-              </h3>
-              <p className="line-clamp-1" title={link.description}>
-                {link.description}
-              </p>
-            </div>
-            <div>
-              <Dropdown aria-label="Options" placement="top-end">
-                <DropdownTrigger>
-                  <Button variant="flat" size="sm" isIconOnly>
-                    <Icon icon="tabler:dots-vertical" width={16} />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem key="view" target="_BLANK" href={link.url}>
-                    View
-                  </DropdownItem>
-                  <DropdownItem
-                    className={
-                      session?.user?.role === 'admin'
-                        ? ''
-                        : session?.user?.email === link.addedBy
-                          ? ''
-                          : 'hidden'
-                    }
-                    key="edit"
-                    href={`/${link._id}/edit`}
-                  >
+          <Dropdown aria-label="Options" placement="top-end">
+            <DropdownTrigger>
+              <Button variant="flat" size="sm" isIconOnly>
+                <Icon icon="tabler:dots-vertical" width={16} />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+              <DropdownItem key="view" target="_BLANK" href={link.url}>
+                View
+              </DropdownItem>
+              {isAdmin ? (
+                <>
+                  <DropdownItem key="edit" href={`/${link._id}/edit`}>
                     Edit
                   </DropdownItem>
                   <DropdownItem
-                    className={`text-danger ${
-                      session?.user?.role === 'admin'
-                        ? ''
-                        : session?.user?.email === link.addedBy
-                          ? ''
-                          : 'hidden'
-                    }`}
                     key="delete"
                     color="danger"
-                    onPress={async () => {
-                      await axios
-                        .delete(`/api/link/${link._id}`)
-                        .then(() => {
-                          addToast({
-                            title: 'Successfully deleted',
-                            description: 'Link has been deleted',
-                            color: 'success'
-                          });
-                          refetch();
-                        })
-                        .catch((error) => {
-                          addToast({
-                            title: 'Error deleting link',
-                            description: error.response.data.message,
-                            color: 'danger'
-                          });
-                        });
-                    }}
+                    className="text-danger"
+                    onPress={onDelete}
                   >
                     Delete
                   </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-    </>
+                </>
+              ) : null}
+            </DropdownMenu>
+          </Dropdown>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
 
