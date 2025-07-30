@@ -47,10 +47,10 @@ async function deleteFile(filename: string) {
   };
   await s3Client
     .send(new DeleteObjectCommand(params))
-    .then((data) => {
+    .then((data: any) => {
       return data;
     })
-    .catch((error) => {
+    .catch((error: any) => {
       throw error;
     });
 }

@@ -10,7 +10,7 @@ const getCategories = async () => {
   const res = await fetch(`${API_BASE_URL}/category`, {
     cache: 'no-cache',
     method: 'GET',
-    headers: { Cookie: cookies().toString() }
+    headers: { Cookie: (await cookies()).toString() }
   });
   const data = await res.json();
   return data;

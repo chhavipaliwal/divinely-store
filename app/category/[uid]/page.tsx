@@ -5,22 +5,23 @@ import { cookies } from 'next/headers';
 import React from 'react';
 
 interface Props {
-  params: {
+  params: Promise<{
     uid: string;
-  };
+  }>;
 }
 
 const getCategory = async (uid: string) => {
   const res = await fetch(`${API_BASE_URL}/category/${uid}`, {
     cache: 'no-cache',
     method: 'GET',
-    headers: { Cookie: cookies().toString() }
+    headers: { Cookie: (await cookies()).toString() }
   });
   const data = await res.json();
   return data;
 };
 
-export default async function Page({ params }: Props) {
+export default async function Page(props: Props) {
+  const params = await props.params;
   const category: Category = await getCategory(params.uid);
   return (
     <>
