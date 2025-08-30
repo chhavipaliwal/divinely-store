@@ -1,14 +1,13 @@
 {
-  "name": "my-app",
+  "name": "divinely-store",
   "version": "0.1.0",
   "private": true,
-  "author": "divinelydeveloper",
+  "author": "chhavipaliwal",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "publish": "npx @raycast/api@latest publish"
+    "lint": "next lint"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.4.2",

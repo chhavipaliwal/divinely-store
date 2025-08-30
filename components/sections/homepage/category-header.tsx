@@ -7,24 +7,20 @@ import Link from 'next/link';
 const socialLinks = [
   {
     icon: 'mdi:github',
-    href: 'https://github.com/imankitkalirawana',
+    href: 'https://github.com/chhavipaliwal',
     label: 'GitHub'
   },
   {
     icon: 'mdi:twitter',
-    href: 'https://x.com/divinely_dev',
+    href: 'https://x.com/chhavipaliwal',
     label: 'Twitter'
   },
   {
     icon: 'mdi:linkedin',
-    href: 'https://www.linkedin.com/in/divinelydeveloper/',
+    href: 'https://www.linkedin.com/in/chhavipaliwal/',
     label: 'LinkedIn'
   },
-  {
-    icon: 'mdi:discord',
-    href: 'https://discord.gg/J3XKCw8pAh',
-    label: 'Discord'
-  }
+
 ];
 
 export default function CategoryHeader() {
@@ -57,7 +53,7 @@ export default function CategoryHeader() {
           <Button
             variant="flat"
             as={Link}
-            href="https://github.com/imankitkalirawana/divinely-store"
+            href="https://github.com/chhavipaliwal/divinely-store"
           >
             Contribute
           </Button>

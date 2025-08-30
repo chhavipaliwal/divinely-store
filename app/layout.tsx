@@ -14,9 +14,9 @@ export const metadata: Metadata = {
     'Divinely Store is a modern resource management platform that helps developers and designers organize, categorize, and share web resources. Access a curated collection of free tools, assets, and essential development resources.',
   keywords:
     'divinely store, resource management, web development tools, design resources, link organization, developer tools, designer resources, free assets, web resources, resource categorization, link management platform, developer essentials, design assets, open source resources, productivity tools, web development, UI/UX resources, coding resources, development assets, tech resources',
-  authors: [{ name: 'Divinely Developer' }],
-  creator: 'Divinely Developer',
-  publisher: 'Divinely Developer',
+  authors: [{ name: 'Chhavi Paliwal' }],
+  creator: 'Chhavi Paliwal',
+  publisher: 'Chhavi Paliwal',
   openGraph: {
     type: 'website',
     title: 'Divinely Store - Resource Management Platform',

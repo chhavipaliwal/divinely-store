@@ -1,6 +1,6 @@
 import { MailOptions } from 'nodemailer/lib/json-transport';
 import { transporter } from './nodemailer';
-const email = process.env.NEXT_PUBLIC_GMAIL || 'divinelydeveloper@gmail.com';
+const email = process.env.NEXT_PUBLIC_GMAIL || '';
 import Otp from '@/models/Otp';
 
 const defaultMailOptions: MailOptions = {
