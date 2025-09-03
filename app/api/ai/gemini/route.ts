@@ -79,8 +79,6 @@ Example response:
       temperature: 0.3
     });
 
-    console.log('Raw AI response:', result.text);
-
     // Parse the JSON response with better error handling
     try {
       // Clean the response text - remove any markdown formatting or extra text
@@ -198,6 +196,8 @@ Guidelines for tag generation:
 6. Focus on actionable, searchable keywords
 7. Include technology, industry, or topic-specific terms when relevant
 8. Consider the domain and URL structure for context
+9. Also search through the website to get the content and add them to tags for example if a component library has input component add "input" to tags
+
 
 Return ONLY a comma-separated list of tags, no additional text or formatting. Example: "react-tutorial,frontend-development,javascript,web-development,programming-guide"`;
 
