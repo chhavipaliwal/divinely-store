@@ -101,6 +101,64 @@ export default function NewLink() {
     }
   });
 
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+  const [tagInput, setTagInput] = useState('');
+
+  const generateContent = async () => {
+    if (!formik.values.url) {
+      addToast({
+        title: 'Please provide a URL before generating content',
+        color: 'warning'
+      });
+      return;
+    }
+
+    setIsGeneratingContent(true);
+    try {
+      const response = await fetch('/api/ai/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          url: formik.values.url
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate content');
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (data.title && data.description && data.tags) {
+        formik.setFieldValue('title', data.title);
+        formik.setFieldValue('description', data.description);
+        formik.setFieldValue('tags', data.tags);
+        addToast({
+          title: 'Content generated successfully!',
+          color: 'success'
+        });
+      } else {
+        throw new Error('Invalid response format - missing required fields');
+      }
+    } catch (error: any) {
+      console.error('Error generating content:', error);
+      const errorMessage =
+        error.message || 'Failed to generate content. Please try again.';
+      addToast({
+        title: errorMessage,
+        color: 'danger'
+      });
+    } finally {
+      setIsGeneratingContent(false);
+    }
+  };
+
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -137,7 +195,7 @@ export default function NewLink() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [formik]);
 
   return (
     <>
@@ -266,16 +324,34 @@ export default function NewLink() {
             <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
               <dt className="text-sm font-medium leading-6">URL</dt>
               <dd className="mt-1 space-y-2 text-sm leading-6 sm:col-span-2 sm:mt-0">
-                <Input
-                  value={formik.values.url}
-                  onChange={formik.handleChange}
-                  name="url"
-                  placeholder="URL"
-                  isInvalid={
-                    formik.touched.url && formik.errors.url ? true : false
-                  }
-                  errorMessage={formik.errors.url}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={formik.values.url}
+                    onChange={formik.handleChange}
+                    name="url"
+                    placeholder="Enter URL to auto-generate content"
+                    isInvalid={
+                      formik.touched.url && formik.errors.url ? true : false
+                    }
+                    errorMessage={formik.errors.url}
+                    className="flex-1"
+                    description={
+                      <p className="text-xs text-default-500">
+                        Enter a URL and click &quot;Generate Content&quot; to
+                        automatically create title, description, and tags
+                      </p>
+                    }
+                  />
+                  <Button
+                    variant="light"
+                    size="sm"
+                    onPress={generateContent}
+                    isLoading={isGeneratingContent}
+                    isDisabled={!formik.values.url}
+                  >
+                    {isGeneratingContent ? 'Generating...' : 'Generate Content'}
+                  </Button>
+                </div>
               </dd>
             </div>
             <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -303,7 +379,38 @@ export default function NewLink() {
             </div>
             <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
               <dt className="text-sm font-medium leading-6">Tags</dt>
-              <dd className="mt-1 flex flex-col-reverse items-start justify-end gap-2 text-sm leading-6 sm:col-span-2 sm:mt-0">
+              <dd className="mt-1 flex flex-col items-start justify-end gap-2 text-sm leading-6 sm:col-span-2 sm:mt-0">
+                <div className="flex w-full flex-col gap-2">
+                  <Input
+                    className="w-full"
+                    placeholder="Add a tag and press Enter"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const newTag = tagInput.trim();
+                        if (
+                          newTag &&
+                          !(formik.values.tags as string[]).includes(newTag)
+                        ) {
+                          formik.setFieldValue('tags', [
+                            ...(formik.values.tags as string[]),
+                            newTag
+                          ]);
+                        }
+                        setTagInput('');
+                      }
+                    }}
+                    description={
+                      formik.values.tags.length > 0 && (
+                        <p className="mt-2 text-xs text-default-500">
+                          {formik.values.tags.length} tag(s) added
+                        </p>
+                      )
+                    }
+                  />
+                </div>
                 <div className="flex flex-wrap gap-1">
                   {formik?.values?.tags.map(
                     (tag, index) =>
@@ -333,13 +440,6 @@ export default function NewLink() {
                       )
                   )}
                 </div>
-                <Textarea
-                  value={formik.values.tags as any}
-                  onChange={(e) => {
-                    formik.setFieldValue('tags', e.target.value.split(','));
-                  }}
-                  placeholder="Add Tags"
-                />
               </dd>
             </div>
             <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
