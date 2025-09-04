@@ -27,6 +27,7 @@ export interface Link extends Base {
   thumbnail: string;
   isEditorsPick: boolean;
   isFeatured: boolean;
+  views: number;
 }
 
 export interface Category extends Base {

@@ -41,6 +41,13 @@ export const GET = auth(async function GET(request: any) {
       pipeline.push({ $match: searchQuery });
     }
 
+    // Ensure views field exists and is a number
+    pipeline.push({
+      $addFields: {
+        views: { $ifNull: ['$views', 0] }
+      }
+    });
+
     if (sort.column === 'relevance') {
       // Add a priority field for sorting
       pipeline.push({
@@ -67,10 +74,42 @@ export const GET = auth(async function GET(request: any) {
         }
       });
     } else {
-      pipeline.push({
-        $sort: {
-          [sort.column]: (sort.direction === 'ascending' ? 1 : -1) as 1 | -1
+      // Map frontend column names to database field names
+      const fieldMapping: { [key: string]: string } = {
+        title: 'title',
+        description: 'description',
+        category: 'category',
+        views: 'views',
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt'
+      };
+
+      const sortField = fieldMapping[sort.column] || sort.column;
+      const sortDirection = sort.direction === 'ascending' ? 1 : -1;
+
+      // Create sort object with primary sort field and fallbacks
+      const sortObject: { [key: string]: 1 | -1 } = {
+        [sortField]: sortDirection as 1 | -1
+      };
+
+      // Add fallback sorting for better results
+      if (sortField === 'views') {
+        // When sorting by views, add additional fallbacks for better UX
+        sortObject.isFeatured = -1; // Featured links first among same view count
+        sortObject.isEditorsPick = -1; // Editor's picks second
+        sortObject.createdAt = -1; // Then by creation date
+      } else {
+        // For other fields, use standard fallbacks
+        if (sortField !== 'createdAt') {
+          sortObject.createdAt = -1; // Always sort by creation date as secondary
         }
+        if (sortField !== 'title') {
+          sortObject.title = 1; // Always sort by title as tertiary
+        }
+      }
+
+      pipeline.push({
+        $sort: sortObject
       });
     }
 
@@ -78,6 +117,7 @@ export const GET = auth(async function GET(request: any) {
     pipeline.push({ $skip: (page - 1) * limit }, { $limit: limit });
 
     const links = await Link.aggregate(pipeline).catch((error) => {
+      console.error('Aggregation error:', error);
       throw new Error(error.message);
     });
 

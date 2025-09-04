@@ -11,7 +11,8 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Image,
-  Pagination
+  Pagination,
+  Tooltip
 } from '@heroui/react';
 import axios from 'axios';
 import { encode } from 'qss';
@@ -200,9 +201,20 @@ const PressableCard = React.memo(
     const isAdmin =
       session?.user?.role === 'admin' || session?.user?.email === link.addedBy;
 
-    const onPress = useCallback(() => {
+    const onPress = useCallback(async () => {
+      try {
+        // Increment view count
+        await axios.patch(`/api/link/${link._id}`, {
+          action: 'increment-views'
+        });
+      } catch (error) {
+        // Silently fail if view count update fails - don't prevent user from opening link
+        console.error('Failed to increment view count:', error);
+      }
+
+      // Open the link
       window.open(link.url, '_blank');
-    }, [link.url]);
+    }, [link.url, link._id]);
 
     const onContextMenu = useCallback(
       (e: React.MouseEvent) => {
@@ -238,7 +250,7 @@ const PressableCard = React.memo(
           <Chip
             size="sm"
             color="primary"
-            className="absolute right-2 top-2 z-50 bg-purple-500 font-bold"
+            className="absolute right-2 top-2 z-50 bg-purple-500/70 font-bold backdrop-blur-sm"
           >
             Featured
           </Chip>
@@ -249,7 +261,7 @@ const PressableCard = React.memo(
           <Chip
             size="sm"
             color="primary"
-            className="absolute right-2 top-2 z-50 bg-blue-500 font-bold"
+            className="absolute right-2 top-2 z-50 bg-blue-500/70 font-bold backdrop-blur-sm"
           >
             Editor&apos;s Pick
           </Chip>
@@ -263,7 +275,7 @@ const PressableCard = React.memo(
           <Chip
             size="sm"
             color="primary"
-            className="absolute right-2 top-2 z-50"
+            className="absolute right-2 top-2 z-50 bg-green-500/70 font-bold backdrop-blur-sm"
           >
             New
           </Chip>
@@ -299,15 +311,27 @@ const PressableCard = React.memo(
             ) : (
               <div className="mb-4 aspect-video w-full animate-pulse bg-default-200" />
             )}
+            <div className="absolute left-0 top-0 z-10">
+              <Chip variant="flat" size="sm" className="backdrop-blur-sm">
+                {link.views || 0} view{link.views > 1 ? 's' : ''}
+              </Chip>
+            </div>
           </div>
+
           <div className="flex items-center justify-between gap-2">
             <div className="flex flex-col">
               <h3 className="line-clamp-1" title={link.title}>
                 {link.title}
               </h3>
-              <p className="line-clamp-1" title={link.description}>
-                {link.description}
-              </p>
+              <Tooltip
+                delay={1000}
+                className="max-w-xs"
+                content={link.description}
+              >
+                <p className="line-clamp-1 text-tiny text-default-500">
+                  {link.description}
+                </p>
+              </Tooltip>
             </div>
             <Dropdown aria-label="Options" placement="top-end">
               <DropdownTrigger>
@@ -316,7 +340,7 @@ const PressableCard = React.memo(
                 </Button>
               </DropdownTrigger>
               <DropdownMenu>
-                <DropdownItem key="view" target="_BLANK" href={link.url}>
+                <DropdownItem key="view" onPress={onPress}>
                   View
                 </DropdownItem>
                 {isAdmin ? (

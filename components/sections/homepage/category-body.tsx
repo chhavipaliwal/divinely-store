@@ -12,7 +12,8 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Input,
-  ScrollShadow
+  ScrollShadow,
+  Tooltip
 } from '@heroui/react';
 import { useQueryState } from 'nuqs';
 import { useCallback, useEffect, useMemo, useState, memo } from 'react';
@@ -20,12 +21,14 @@ import Links from './links';
 import Skeleton from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useForm } from './context';
+import { STORAGE_KEYS } from '@/lib/localstorage-util';
 
 // Move static content outside component
 const sortItems = [
   { label: 'Relevance', value: 'relevance' },
   { label: 'Title', value: 'title' },
-  { label: 'Created At', value: 'createdAt' }
+  { label: 'Created At', value: 'createdAt' },
+  { label: 'Popularity', value: 'views' }
 ];
 
 const iconMap = {
@@ -172,35 +175,39 @@ export default function CategoryBody({ session }: { session?: any }) {
             <Button as={Link} href="/settings" isIconOnly variant="bordered">
               <Icon icon="solar:settings-linear" width={20} />
             </Button>
-            <Dropdown placement="bottom-end">
-              <DropdownTrigger>
-                <Button isIconOnly variant="bordered">
-                  <Icon icon="solar:sort-vertical-linear" width={20} />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                selectedKeys={[formik.values.sort.column]}
-                closeOnSelect={false}
-                items={sortedItemsWithState}
-              >
-                {(item) => (
-                  <DropdownItem
-                    key={item.value}
-                    onPress={() => handleSortChange(item)}
-                    endContent={
-                      item.isSelected && (
-                        <Icon
-                          icon={iconMap[item.direction as keyof typeof iconMap]}
-                          width={20}
-                        />
-                      )
-                    }
-                  >
-                    {item.label}
-                  </DropdownItem>
-                )}
-              </DropdownMenu>
-            </Dropdown>
+            <Tooltip content="Sort Options" placement="bottom">
+              <Dropdown placement="bottom-end">
+                <DropdownTrigger>
+                  <Button isIconOnly variant="bordered">
+                    <Icon icon="solar:sort-vertical-linear" width={20} />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  selectedKeys={[formik.values.sort.column]}
+                  closeOnSelect={false}
+                  items={sortedItemsWithState}
+                >
+                  {(item) => (
+                    <DropdownItem
+                      key={item.value}
+                      onPress={() => handleSortChange(item)}
+                      endContent={
+                        item.isSelected && (
+                          <Icon
+                            icon={
+                              iconMap[item.direction as keyof typeof iconMap]
+                            }
+                            width={20}
+                          />
+                        )
+                      }
+                    >
+                      {item.label}
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+            </Tooltip>
           </ButtonGroup>
         </div>
 

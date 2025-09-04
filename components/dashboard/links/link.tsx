@@ -10,9 +10,11 @@ import {
   CardHeader,
   CardBody,
   Avatar
-} from "@heroui/react";
+} from '@heroui/react';
 import { IconPencil } from '@tabler/icons-react';
+import { Icon } from '@iconify/react/dist/iconify.js';
 import Link from 'next/link';
+import axios from 'axios';
 
 interface Props {
   link: ILink;
@@ -61,6 +63,17 @@ export default function ViewLink({ link }: Props) {
                   className="hover:underline"
                   target="_blank"
                   rel="noreferrer"
+                  onClick={async () => {
+                    try {
+                      // Increment view count
+                      await axios.patch(`/api/link/${link._id}`, {
+                        action: 'increment-views'
+                      });
+                    } catch (error) {
+                      // Silently fail if view count update fails - don't prevent user from opening link
+                      console.error('Failed to increment view count:', error);
+                    }
+                  }}
                 >
                   {link.url}
                 </NextLink>
@@ -80,6 +93,15 @@ export default function ViewLink({ link }: Props) {
                     {tag}
                   </Chip>
                 ))}
+              </dd>
+            </div>
+            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <dt className="text-sm font-medium leading-6">Views</dt>
+              <dd className="mt-1 text-sm leading-6 sm:col-span-2 sm:mt-0">
+                <div className="flex items-center gap-2">
+                  <Icon icon="tabler:eye" width={16} />
+                  <span>{link.views || 0} views</span>
+                </div>
               </dd>
             </div>
           </CardBody>

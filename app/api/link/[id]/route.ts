@@ -43,6 +43,39 @@ export const PUT = auth(async function PUT(request: any, context: any) {
   }
 });
 
+export const PATCH = async function PATCH(request: any, context: any) {
+  try {
+    await connectDB();
+
+    const { action } = await request.json();
+
+    if (action === 'increment-views') {
+      const updatedLink = await Link.findByIdAndUpdate(
+        context.params.id,
+        { $inc: { views: 1 } },
+        { new: true }
+      );
+
+      if (!updatedLink) {
+        return NextResponse.json(
+          { message: 'Link not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        message: 'View count updated',
+        views: updatedLink.views
+      });
+    }
+
+    return NextResponse.json({ message: 'Invalid action' }, { status: 400 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ message: 'An error occurred' }, { status: 500 });
+  }
+};
+
 export const DELETE = auth(async function DELETE(request: any, context: any) {
   try {
     if (!request.auth?.user) {

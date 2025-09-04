@@ -31,7 +31,7 @@ import {
   ModalFooter,
   useDisclosure,
   Spinner
-} from "@heroui/react";
+} from '@heroui/react';
 import { useFormik } from 'formik';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -41,8 +41,16 @@ import { signOut } from 'next-auth/react';
 import axios from 'axios';
 import { useQueryState, parseAsInteger } from 'nuqs';
 import useDebounce from '@/hooks/useDebounce';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { STORAGE_KEYS } from '@/lib/localstorage-util';
 
-const INITIAL_VISIBLE_COLUMNS = ['title', 'description', 'category', 'actions'];
+const INITIAL_VISIBLE_COLUMNS = [
+  'title',
+  'description',
+  'category',
+  'views',
+  'actions'
+];
 
 export default function Links() {
   const [links, setLinks] = React.useState<ILink[]>([]);
@@ -66,18 +74,51 @@ export default function Links() {
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
     new Set([])
   );
+  // Use localStorage to persist visible columns preferences
+  const [storedVisibleColumns, setStoredVisibleColumns] = useLocalStorage(
+    STORAGE_KEYS.DASHBOARD_VISIBLE_COLUMNS,
+    INITIAL_VISIBLE_COLUMNS
+  );
+
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
-    new Set(INITIAL_VISIBLE_COLUMNS)
+    new Set(storedVisibleColumns)
   );
   const [rowsPerPage, setRowsPerPage] = useQueryState(
     'rows',
     parseAsInteger.withDefault(20)
   );
-  const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
-    column: 'name',
-    direction: 'ascending'
-  });
+  // Use localStorage to persist dashboard sort preferences
+  const [storedDashboardSort, setStoredDashboardSort] = useLocalStorage(
+    STORAGE_KEYS.DASHBOARD_SORT_PREFERENCE,
+    {
+      column: 'title',
+      direction: 'ascending'
+    }
+  );
+
+  const [sortDescriptor, setSortDescriptor] =
+    React.useState<SortDescriptor>(storedDashboardSort);
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
+
+  // Save sort changes to localStorage
+  useEffect(() => {
+    if (
+      sortDescriptor.column !== storedDashboardSort.column ||
+      sortDescriptor.direction !== storedDashboardSort.direction
+    ) {
+      setStoredDashboardSort(sortDescriptor);
+    }
+  }, [sortDescriptor, storedDashboardSort, setStoredDashboardSort]);
+
+  // Save visible columns changes to localStorage
+  useEffect(() => {
+    const currentColumns = Array.from(visibleColumns);
+    if (
+      JSON.stringify(currentColumns) !== JSON.stringify(storedVisibleColumns)
+    ) {
+      setStoredVisibleColumns(currentColumns);
+    }
+  }, [visibleColumns, storedVisibleColumns, setStoredVisibleColumns]);
 
   useEffect(() => {
     const getLinks = async () => {
@@ -114,10 +155,32 @@ export default function Links() {
 
   const sortedItems = React.useMemo(() => {
     return [...links].sort((a: ILink, b: ILink) => {
-      const first = a[sortDescriptor.column as keyof ILink] as string;
-      const second = b[sortDescriptor.column as keyof ILink] as string;
-      const cmp = first < second ? -1 : first > second ? 1 : 0;
+      const first = a[sortDescriptor.column as keyof ILink];
+      const second = b[sortDescriptor.column as keyof ILink];
 
+      // Handle numeric sorting for views and dates
+      if (sortDescriptor.column === 'views') {
+        const firstNum = Number(first) || 0;
+        const secondNum = Number(second) || 0;
+        const cmp = firstNum - secondNum;
+        return sortDescriptor.direction === 'descending' ? -cmp : cmp;
+      }
+
+      // Handle date sorting
+      if (
+        sortDescriptor.column === 'updatedAt' ||
+        sortDescriptor.column === 'createdAt'
+      ) {
+        const firstDate = new Date(first as string).getTime();
+        const secondDate = new Date(second as string).getTime();
+        const cmp = firstDate - secondDate;
+        return sortDescriptor.direction === 'descending' ? -cmp : cmp;
+      }
+
+      // Handle string sorting
+      const firstStr = String(first || '').toLowerCase();
+      const secondStr = String(second || '').toLowerCase();
+      const cmp = firstStr < secondStr ? -1 : firstStr > secondStr ? 1 : 0;
       return sortDescriptor.direction === 'descending' ? -cmp : cmp;
     });
   }, [sortDescriptor, links]);
@@ -166,6 +229,15 @@ export default function Links() {
           <p className="text-bold whitespace-nowrap text-sm capitalize">
             {link.category}
           </p>
+        );
+      case 'views':
+        return (
+          <div className="flex items-center gap-1">
+            <Icon icon="tabler:eye" width={16} />
+            <p className="text-bold whitespace-nowrap text-sm">
+              {link.views || 0}
+            </p>
+          </div>
         );
       case 'updatedAt':
         return (
@@ -409,7 +481,22 @@ export default function Links() {
         topContentPlacement="outside"
         onSelectionChange={setSelectedKeys}
         onSortChange={setSortDescriptor}
-        onRowAction={(key) => {
+        onRowAction={async (key) => {
+          try {
+            // Find the link by URL to get its ID
+            const link = links.find((l) => l.url === key);
+            if (link) {
+              // Increment view count
+              await axios.patch(`/api/link/${link._id}`, {
+                action: 'increment-views'
+              });
+            }
+          } catch (error) {
+            // Silently fail if view count update fails - don't prevent user from opening link
+            console.error('Failed to increment view count:', error);
+          }
+
+          // Open the link
           window.open(key as any, '_blank');
         }}
         className="cursor-pointer"
@@ -438,7 +525,7 @@ export default function Links() {
             >
               {(columnKey) => (
                 // @ts-ignore
-                (<TableCell>{renderCell(item, columnKey)}</TableCell>)
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
               )}
             </TableRow>
           )}
@@ -504,6 +591,7 @@ const columns = [
   { name: 'DESCRIPTION', uid: 'description' },
   { name: 'TAGS', uid: 'tags' },
   { name: 'CATEGORY', uid: 'category', sortable: true },
+  { name: 'VIEWS', uid: 'views', sortable: true },
   { name: 'UPDATED AT', uid: 'updatedAt', sortable: true },
   { name: 'ACTIONS', uid: 'actions' }
 ];

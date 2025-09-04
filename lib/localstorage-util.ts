@@ -1,23 +1,49 @@
-const LOCAL_STORAGE_KEY = 'config';
+/**
+ * Utility functions for managing localStorage preferences
+ */
 
-export function saveTableConfig(table: string, config: any) {
-  const existingConfig = JSON.parse(
-    (typeof window !== 'undefined'
-      ? window.localStorage.getItem(LOCAL_STORAGE_KEY)
-      : null) || '{}'
-  );
-  existingConfig['data-table'] = existingConfig['data-table'] || {};
-  existingConfig['data-table'][table] = config;
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(existingConfig));
-}
+export const STORAGE_KEYS = {
+  LINK_SORT_PREFERENCE: 'linkSortPreference',
+  DASHBOARD_SORT_PREFERENCE: 'dashboardSortPreference',
+  DASHBOARD_VISIBLE_COLUMNS: 'dashboardVisibleColumns'
+} as const;
 
-export function loadTableConfig(table: string) {
-  const existingConfig = JSON.parse(
-    (typeof window !== 'undefined'
-      ? window.localStorage.getItem(LOCAL_STORAGE_KEY)
-      : null) || '{}'
-  );
-  return existingConfig['data-table']
-    ? existingConfig['data-table'][table]
-    : null;
-}
+/**
+ * Clear all stored preferences
+ */
+export const clearAllPreferences = () => {
+  if (typeof window === 'undefined') return;
+
+  Object.values(STORAGE_KEYS).forEach((key) => {
+    localStorage.removeItem(key);
+  });
+};
+
+/**
+ * Clear specific preference
+ */
+export const clearPreference = (key: string) => {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(key);
+};
+
+/**
+ * Get all stored preferences
+ */
+export const getAllPreferences = () => {
+  if (typeof window === 'undefined') return {};
+
+  const preferences: Record<string, any> = {};
+  Object.values(STORAGE_KEYS).forEach((key) => {
+    const value = localStorage.getItem(key);
+    if (value) {
+      try {
+        preferences[key] = JSON.parse(value);
+      } catch {
+        preferences[key] = value;
+      }
+    }
+  });
+
+  return preferences;
+};

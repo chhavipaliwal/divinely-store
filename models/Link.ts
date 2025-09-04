@@ -18,7 +18,16 @@ const linkSchema = new mongoose.Schema<LinkInterface>(
     modifiedBy: String,
     thumbnail: String,
     isEditorsPick: Boolean,
-    isFeatured: Boolean
+    isFeatured: Boolean,
+    status: {
+      type: String,
+      enum: ['open', 'closed'],
+      default: 'open'
+    },
+    views: {
+      type: Number,
+      default: 0
+    }
   },
   {
     timestamps: true
