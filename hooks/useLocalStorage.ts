@@ -2,8 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useEventListener } from './useEventListener';
 
-import { $FixMe } from '@/types';
-
 /**
  * A React hook to manage state synced with localStorage.
  *
@@ -34,7 +32,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   }, [initialValue, key]);
 
   const [storedValue, setStoredValue] = useState(readValue);
-  const setValueRef = useRef<$FixMe>(null);
+  const setValueRef = useRef<any>(null);
 
   setValueRef.current = (value: T) => {
     try {
@@ -54,13 +52,16 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     setStoredValue(readValue());
   }, []);
 
-  const handleStorageChange = useCallback(() => setStoredValue(readValue()), [readValue]);
+  const handleStorageChange = useCallback(
+    () => setStoredValue(readValue()),
+    [readValue]
+  );
   useEventListener('storage', handleStorageChange);
   useEventListener('local-storage', handleStorageChange);
   return [storedValue, setValue];
 }
 
-function parseJSON(value: $FixMe) {
+function parseJSON(value: any) {
   try {
     return value === 'undefined' ? undefined : JSON.parse(value ?? '');
   } catch {
