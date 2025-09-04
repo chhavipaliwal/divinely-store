@@ -2,8 +2,6 @@ import React, { useEffect, useRef } from 'react';
 
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 
-import { $FixMe } from '@/types';
-
 /**
  * A React hook for adding event listeners to DOM elements or the window object.
  *
@@ -18,8 +16,8 @@ import { $FixMe } from '@/types';
 
 export function useEventListener(
   eventName: string,
-  handler: (e: Event) => $FixMe,
-  element?: React.RefObject<$FixMe>
+  handler: (e: Event) => any,
+  element?: React.RefObject<any>
 ) {
   const savedHandler = useRef(handler);
 
