@@ -161,10 +161,11 @@ const PressableCard = React.memo(
   ({ link, refetch }: { link: LinkType; refetch: () => void }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [showMicrolinkImage, setShowMicrolinkImage] = useState(false);
+    const [originalImageFailed, setOriginalImageFailed] = useState(false);
     const { data: session } = useSession();
 
     const src = useMemo(() => {
-      if (!showMicrolinkImage) return '';
+      if (!showMicrolinkImage || !originalImageFailed) return '';
       return `https://api.microlink.io/?${encode({
         url: link.url,
         screenshot: true,
@@ -176,13 +177,13 @@ const PressableCard = React.memo(
         'viewport.width': 1236,
         'viewport.height': 800
       })}`;
-    }, [link.url, showMicrolinkImage]);
+    }, [link.url, showMicrolinkImage, originalImageFailed]);
 
-    // Load microlink image only when component is visible
+    // Load microlink image only when component is visible and original image fails
     useEffect(() => {
       const observer = new IntersectionObserver(
         ([entry]) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && originalImageFailed) {
             setShowMicrolinkImage(true);
             observer.disconnect();
           }
@@ -196,7 +197,12 @@ const PressableCard = React.memo(
       }
 
       return () => observer.disconnect();
-    }, [link._id]);
+    }, [link._id, originalImageFailed]);
+
+    const handleImageError = () => {
+      setOriginalImageFailed(true);
+      setIsLoading(false);
+    };
 
     const isAdmin =
       session?.user?.role === 'admin' || session?.user?.email === link.addedBy;
@@ -296,11 +302,24 @@ const PressableCard = React.memo(
         {renderChip()}
         <CardBody className="gap-2">
           <div className="relative w-full">
-            {showMicrolinkImage ? (
+            {link.thumbnail && !originalImageFailed ? (
               <Image
                 isBlurred
                 isLoading={isLoading}
-                src={link.thumbnail || src}
+                src={link.thumbnail}
+                onLoad={() => setIsLoading(false)}
+                onError={handleImageError}
+                loading="lazy"
+                alt={link.title}
+                className="mb-4 aspect-video w-full bg-default-200 object-cover"
+                width={600}
+                classNames={{ wrapper: 'aspect-video' }}
+              />
+            ) : showMicrolinkImage && originalImageFailed ? (
+              <Image
+                isBlurred
+                isLoading={isLoading}
+                src={src}
                 onLoad={() => setIsLoading(false)}
                 loading="lazy"
                 alt={link.title}
